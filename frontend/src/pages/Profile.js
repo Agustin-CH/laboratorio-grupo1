@@ -1,5 +1,10 @@
 import React, { useState } from "react";
-import { Box, Typography, Stack, Button, useMediaQuery, TextField } from "@mui/material";
+import {
+  Box,
+  Typography,
+  TextField,
+  useMediaQuery,
+} from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import PersonIcon from "@mui/icons-material/Person";
 
@@ -13,38 +18,111 @@ const Profile = () => {
     nacionalidad: "",
     dni: "",
     email: "",
-    direccion: ""
+    direccion: "",
   });
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value
+      [e.target.name]: e.target.value,
     });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Datos del perfil:", formData);
   };
 
   return (
     <Box sx={{ fontFamily: "'Helvetica Neue', sans-serif" }}>
-      {/* Header */}
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", px: isMobile ? 2 : 4, py: 2, borderBottom: "1px solid #e0e0e0" }}>
+      {/* Header e-commerce */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          px: isMobile ? 2 : 4,
+          py: 2,
+          borderBottom: "1px solid #e0e0e0",
+          position: "sticky",
+          top: 0,
+          bgcolor: "white",
+          zIndex: 1000,
+        }}
+      >
         <ArrowBackIcon />
-        <Typography variant={isMobile ? "h5" : "h4"} sx={{ letterSpacing: "4px", fontWeight: 400 }}>E-COMMERCE</Typography>
+        <Typography
+          variant={isMobile ? "h5" : "h4"}
+          sx={{ letterSpacing: "4px", fontWeight: 400 }}
+        >
+          E-COMMERCE
+        </Typography>
         <PersonIcon fontSize="small" />
       </Box>
 
+      {/* Contenido principal */}
       <Box sx={{ maxWidth: 800, mx: "auto", p: isMobile ? 2 : 4 }}>
-        <Typography variant="h5" sx={{ mb: 4, fontWeight: 500, textAlign: "center" }}>
+        <Typography
+          variant="h5"
+          sx={{
+            mb: 4,
+            fontWeight: 500,
+            letterSpacing: "2px",
+            textAlign: "center",
+          }}
+        >
           MI PERFIL
         </Typography>
-        <form onSubmit={handleSubmit}>
-          {/* Campos del formulario */}
-        </form>
+
+        {/* Formulario */}
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <TextField
+            label="Nombre"
+            name="nombre"
+            value={formData.nombre}
+            onChange={handleChange}
+            fullWidth
+          />
+          <TextField
+            label="Apellido"
+            name="apellido"
+            value={formData.apellido}
+            onChange={handleChange}
+            fullWidth
+          />
+          <TextField
+            label="Fecha de nacimiento"
+            name="fechaNacimiento"
+            type="date"
+            value={formData.fechaNacimiento}
+            onChange={handleChange}
+            InputLabelProps={{ shrink: true }}
+            fullWidth
+          />
+          <TextField
+            label="Nacionalidad"
+            name="nacionalidad"
+            value={formData.nacionalidad}
+            onChange={handleChange}
+            fullWidth
+          />
+          <TextField
+            label="DNI"
+            name="dni"
+            value={formData.dni}
+            onChange={handleChange}
+            fullWidth
+          />
+          <TextField
+            label="Email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            fullWidth
+          />
+          <TextField
+            label="Dirección"
+            name="direccion"
+            value={formData.direccion}
+            onChange={handleChange}
+            fullWidth
+          />
+        </Box>
       </Box>
     </Box>
   );
