@@ -1,9 +1,11 @@
+// Paso 4 - Estilizamos el formulario con un contenedor estético
 import React, { useState } from "react";
 import {
   Box,
   Typography,
   TextField,
   useMediaQuery,
+  Paper,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import PersonIcon from "@mui/icons-material/Person";
@@ -69,60 +71,69 @@ const Profile = () => {
           MI PERFIL
         </Typography>
 
-        {/* Formulario */}
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <TextField
-            label="Nombre"
-            name="nombre"
-            value={formData.nombre}
-            onChange={handleChange}
-            fullWidth
-          />
-          <TextField
-            label="Apellido"
-            name="apellido"
-            value={formData.apellido}
-            onChange={handleChange}
-            fullWidth
-          />
-          <TextField
-            label="Fecha de nacimiento"
-            name="fechaNacimiento"
-            type="date"
-            value={formData.fechaNacimiento}
-            onChange={handleChange}
-            InputLabelProps={{ shrink: true }}
-            fullWidth
-          />
-          <TextField
-            label="Nacionalidad"
-            name="nacionalidad"
-            value={formData.nacionalidad}
-            onChange={handleChange}
-            fullWidth
-          />
-          <TextField
-            label="DNI"
-            name="dni"
-            value={formData.dni}
-            onChange={handleChange}
-            fullWidth
-          />
-          <TextField
-            label="Email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            fullWidth
-          />
-          <TextField
-            label="Dirección"
-            name="direccion"
-            value={formData.direccion}
-            onChange={handleChange}
-            fullWidth
-          />
-        </Box>
+        {/* Contenedor con sombra */}
+        <Paper
+          elevation={3}
+          sx={{
+            p: 3,
+            borderRadius: 3,
+            backgroundColor: "#fff",
+          }}
+        >
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <TextField
+              label="Nombre"
+              name="nombre"
+              value={formData.nombre}
+              onChange={handleChange}
+              fullWidth
+            />
+            <TextField
+              label="Apellido"
+              name="apellido"
+              value={formData.apellido}
+              onChange={handleChange}
+              fullWidth
+            />
+            <TextField
+              label="Fecha de nacimiento"
+              name="fechaNacimiento"
+              type="date"
+              value={formData.fechaNacimiento}
+              onChange={handleChange}
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+            />
+            <TextField
+              label="Nacionalidad"
+              name="nacionalidad"
+              value={formData.nacionalidad}
+              onChange={handleChange}
+              fullWidth
+            />
+            <TextField
+              label="DNI"
+              name="dni"
+              value={formData.dni}
+              onChange={handleChange}
+              fullWidth
+            />
+            <TextField
+              label="Email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              fullWidth
+            />
+            <TextField
+              label="Dirección"
+              name="direccion"
+              value={formData.direccion}
+              onChange={handleChange}
+              fullWidth
+            />
+          </Box>
+        </Paper>
       </Box>
     </Box>
   );
