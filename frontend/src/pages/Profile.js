@@ -1,14 +1,17 @@
-// Paso 4 - Estilizamos el formulario con un contenedor estético
 import React, { useState } from "react";
-import {
-  Box,
-  Typography,
+import { 
+  Box, 
+  Typography, 
+  Button, 
+  useMediaQuery, 
   TextField,
-  useMediaQuery,
   Paper,
+  Divider,
+  Stack
 } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import PersonIcon from "@mui/icons-material/Person";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import SaveIcon from "@mui/icons-material/Save";
 
 const Profile = () => {
   const isMobile = useMediaQuery("(max-width:600px)");
@@ -20,19 +23,24 @@ const Profile = () => {
     nacionalidad: "",
     dni: "",
     email: "",
-    direccion: "",
+    direccion: ""
   });
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: value
     });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("Datos del perfil:", formData);
   };
 
   return (
     <Box sx={{ fontFamily: "'Helvetica Neue', sans-serif" }}>
-      {/* Header e-commerce */}
       <Box
         sx={{
           display: "flex",
@@ -57,83 +65,121 @@ const Profile = () => {
         <PersonIcon fontSize="small" />
       </Box>
 
-      {/* Contenido principal */}
-      <Box sx={{ maxWidth: 800, mx: "auto", p: isMobile ? 2 : 4 }}>
-        <Typography
-          variant="h5"
-          sx={{
-            mb: 4,
-            fontWeight: 500,
+      <Box sx={{ maxWidth: 400, mx: "auto", p: isMobile ? 2 : 4 }}>
+        <Typography 
+          variant="h5" 
+          sx={{ 
+            mb: 4, 
+            fontWeight: 500, 
             letterSpacing: "2px",
-            textAlign: "center",
+            textAlign: "center"
           }}
         >
           MI PERFIL
         </Typography>
 
-        {/* Contenedor con sombra */}
-        <Paper
-          elevation={3}
-          sx={{
-            p: 3,
-            borderRadius: 3,
-            backgroundColor: "#fff",
+        <Paper 
+          elevation={0} 
+          sx={{ 
+            p: isMobile ? 2 : 4, 
+            border: "1px solid #e0e0e0",
+            borderRadius: 2
           }}
         >
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <TextField
-              label="Nombre"
-              name="nombre"
-              value={formData.nombre}
-              onChange={handleChange}
-              fullWidth
-            />
-            <TextField
-              label="Apellido"
-              name="apellido"
-              value={formData.apellido}
-              onChange={handleChange}
-              fullWidth
-            />
-            <TextField
-              label="Fecha de nacimiento"
-              name="fechaNacimiento"
-              type="date"
-              value={formData.fechaNacimiento}
-              onChange={handleChange}
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-            />
-            <TextField
-              label="Nacionalidad"
-              name="nacionalidad"
-              value={formData.nacionalidad}
-              onChange={handleChange}
-              fullWidth
-            />
-            <TextField
-              label="DNI"
-              name="dni"
-              value={formData.dni}
-              onChange={handleChange}
-              fullWidth
-            />
-            <TextField
-              label="Email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              fullWidth
-            />
-            <TextField
-              label="Dirección"
-              name="direccion"
-              value={formData.direccion}
-              onChange={handleChange}
-              fullWidth
-            />
-          </Box>
+          <form onSubmit={handleSubmit}>
+            <Stack spacing={3}>
+              <TextField
+                label="Nombre"
+                name="nombre"
+                variant="outlined"
+                value={formData.nombre}
+                onChange={handleChange}
+                InputProps={{ sx: { borderRadius: 2 } }}
+              />
+              <TextField
+                label="Apellido"
+                name="apellido"
+                variant="outlined"
+                value={formData.apellido}
+                onChange={handleChange}
+                InputProps={{ sx: { borderRadius: 2 } }}
+              />
+              <TextField
+                label="Fecha de nacimiento"
+                name="fechaNacimiento"
+                type="date"
+                variant="outlined"
+                value={formData.fechaNacimiento}
+                onChange={handleChange}
+                InputLabelProps={{ shrink: true }}
+                InputProps={{ sx: { borderRadius: 2 } }}
+              />
+              <TextField
+                label="Nacionalidad"
+                name="nacionalidad"
+                variant="outlined"
+                value={formData.nacionalidad}
+                onChange={handleChange}
+                InputProps={{ sx: { borderRadius: 2 } }}
+              />
+              <TextField
+                label="Número de DNI"
+                name="dni"
+                variant="outlined"
+                value={formData.dni}
+                onChange={handleChange}
+                InputProps={{ sx: { borderRadius: 2 } }}
+              />
+              <TextField
+                label="Email"
+                name="email"
+                type="email"
+                variant="outlined"
+                value={formData.email}
+                onChange={handleChange}
+                InputProps={{ sx: { borderRadius: 2 } }}
+              />
+              <TextField
+                label="Dirección de domicilio"
+                name="direccion"
+                variant="outlined"
+                value={formData.direccion}
+                onChange={handleChange}
+                multiline
+                rows={2}
+                InputProps={{ sx: { borderRadius: 2 } }}
+              />
+              <Divider sx={{ my: 2 }} />
+              <Button
+                type="submit"
+                variant="contained"
+                startIcon={<SaveIcon />}
+                sx={{
+                  backgroundColor: "black",
+                  color: "white",
+                  borderRadius: 2,
+                  fontWeight: 600
+                }}
+              >
+                GUARDAR CAMBIOS
+              </Button>
+            </Stack>
+          </form>
         </Paper>
+      </Box>
+
+      <Box
+        sx={{
+          backgroundColor: "black",
+          color: "white",
+          textAlign: "center",
+          py: 1,
+          fontSize: "0.75rem",
+          position: "relative",
+          mt: 4
+        }}
+      >
+        ENVÍO GRATIS EN COMPRAS SUPERIORES A $100.000
       </Box>
     </Box>
   );
