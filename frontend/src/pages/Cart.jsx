@@ -13,6 +13,9 @@ import {
   Divider,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
+
 
 const Cart = () => {
   // Simulación de productos en el carrito
@@ -42,53 +45,73 @@ const Cart = () => {
   const total = subtotal + shippingCost;
 
   return (
-    <Box sx={{ padding: 4 }}>
-      {/* Título principal */}
-      <Typography variant="h4" gutterBottom>
-        Carrito de Compras
-      </Typography>
+        <Box sx={{ padding: 4 }}>
+          {/* Título principal */}
+          <Typography variant="h4" gutterBottom>
+            Carrito de Compras
+          </Typography>
 
-      {/* Listado de productos */}
-      <Grid container spacing={2}>
-        {cartItems.map((item) => (
-          <Grid item xs={12} md={8} key={item.id}>
-            <Card sx={{ display: 'flex', alignItems: 'center', padding: 2 }}>
-              {/* Simulación de imagen */}
-              <Box
-                sx={{
-                  width: 80,
-                  height: 80,
-                  backgroundColor: '#eee',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginRight: 2,
-                }}
-              >
-                <Typography variant="caption">Imagen</Typography>
-              </Box>
+          {/* Listado de productos - AHORA EN COLUMNA */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 4 }}>
+            {cartItems.map((item) => (
+              <Card key={item.id} sx={{ display: 'flex', alignItems: 'center', padding: 2 }}>
+                {/* Simulación de imagen */}
+                <Box
+                  sx={{
+                    width: 80,
+                    height: 80,
+                    backgroundColor: '#eee',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginRight: 2,
+                  }}
+                >
+                  <Typography variant="caption">Imagen</Typography>
+                </Box>
 
-              {/* Detalles del producto */}
               <Box sx={{ flexGrow: 1 }}>
                 <Typography variant="h6">{item.name}</Typography>
                 <Typography variant="body2">Precio unitario: ${item.price}</Typography>
-                <Typography variant="body2">Cantidad: {item.quantity}</Typography>
-                <Typography variant="body2">
+                
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+                  <IconButton 
+                    size="small" 
+                    color="primary"
+                    onClick={() => handleDecrement(item.id)}
+                    disabled={item.quantity <= 1}
+                  >
+                    <RemoveIcon fontSize="small" />
+                  </IconButton>
+                  <Typography variant="body1" sx={{ minWidth: '20px', textAlign: 'center' }}>
+                    {item.quantity}
+                  </Typography>
+                  <IconButton 
+                    size="small" 
+                    color="primary"
+                    onClick={() => handleIncrement(item.id)}
+                  >
+                    <AddIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+                
+                <Typography variant="body2" sx={{ mt: 1 }}>
                   Total: ${item.quantity * item.price}
                 </Typography>
               </Box>
 
-              {/* Botón para eliminar */}
-              <IconButton color="error">
+              <IconButton color="error" onClick={() => handleRemove(item.id)}>
                 <DeleteIcon />
               </IconButton>
             </Card>
-          </Grid>
         ))}
+      </Box>
 
-        {/* Resumen del carrito */}
-        <Grid item xs={12} md={4}>
-          <Paper elevation={3} sx={{ padding: 3 }}>
+          {/* Resumen del carrito - AHORA FUERA DEL GRID ANTERIOR */}
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={4}>
+              <Paper elevation={3} sx={{ padding: 3 }}>
+                
             <Typography variant="h6" gutterBottom>
               Resumen del Pedido
             </Typography>
