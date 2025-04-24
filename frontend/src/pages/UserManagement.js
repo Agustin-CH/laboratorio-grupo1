@@ -1,4 +1,5 @@
 import { Box, Typography, useMediaQuery } from "@mui/material"
+import PersonIcon from "@mui/icons-material/Person"
 
 const Login = () => {
   const isMobile = useMediaQuery("(max-width:600px)")
@@ -18,6 +19,9 @@ const Login = () => {
         <Typography variant="h5" sx={{ fontWeight: "bold" }}>
           E - COMMERCE
         </Typography>
+        <Box sx={{ display: "flex", gap: 2 }}>
+          <PersonIcon />
+        </Box>
       </Box>
     </Box>
   )
