@@ -1,4 +1,4 @@
-import { Box, Typography, Stack, Button, TextField, Link, useMediaQuery, Paper } from "@mui/material"
+import { Box, Typography, Stack, Button, TextField, Link, useMediaQuery, Paper, Divider } from "@mui/material"
 import PersonIcon from "@mui/icons-material/Person"
 
 const Login = () => {
@@ -78,6 +78,20 @@ const Login = () => {
               }}
             >
               Iniciar Sesión
+            </Button>
+
+            <Divider>o</Divider>
+
+            <Button
+              variant="outlined"
+              fullWidth
+              sx={{
+                py: 1.5,
+                textTransform: "none",
+                fontWeight: "bold",
+              }}
+            >
+              Registrarse
             </Button>
           </Stack>
         </Paper>
