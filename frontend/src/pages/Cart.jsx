@@ -15,44 +15,72 @@ import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+
+
 
 const Cart = () => {
   const isMobile = useMediaQuery("(max-width:600px)");
   const [cartItems, setCartItems] = React.useState([
     {
       id: 1,
-      name: "Auriculares Bluetooth",
+      name: "Camiseta básica blanca",
       quantity: 2,
-      price: 50,
-      image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e",
+      price: 19.99,
+      stock: 10,
+      image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=880&q=80",
+      sizes: ["S", "M", "L", "XL"]
     },
     {
       id: 2,
-      name: "Remera Estampada",
+      name: "Jeans slim fit azul",
       quantity: 1,
-      price: 25,
-      image: "https://images.unsplash.com/photo-1529374255404-311a2a4f1fd9",
+      price: 49.99,
+      stock: 5,
+      image: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80",
+      sizes: ["28", "30", "32", "34"]
     },
     {
       id: 3,
-      name: "Libro de React",
-      quantity: 3,
-      price: 30,
-      image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f",
+      name: "Chaqueta denim",
+      quantity: 1,
+      price: 79.99,
+      stock: 3,
+      image: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=736&q=80",
+      sizes: ["S", "M", "L"]
+    },
+    {
+      id: 4,
+      name: "Vestido floral",
+      quantity: 1,
+      price: 39.99,
+      stock: 7,
+      image: "https://images.unsplash.com/photo-1585487000160-6ebcfceb0d03?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=734&q=80",
+      sizes: ["XS", "S", "M"]
+    },
+    {
+      id: 5,
+      name: "Sudadera con capucha",
+      quantity: 1,
+      price: 45.99,
+      stock: 8,
+      image: "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80",
+      sizes: ["M", "L", "XL"]
     },
   ]);
 
-  const shippingCost = 10;
-  const subtotal = cartItems.reduce(
+  
+    const subtotal = cartItems.reduce(
     (acc, item) => acc + item.quantity * item.price,
     0
-  );
+  ); 
+  const shippingCost = subtotal > 100 ? 0 : 10;
   const total = subtotal + shippingCost;
 
   const handleIncrement = (id) => {
     setCartItems(
       cartItems.map((item) =>
-        item.id === id ? { ...item, quantity: item.quantity + 1 } : item
+        item.id === id && item.quantity < item.stock ? { ...item, quantity: item.quantity + 1 } : item
       )
     );
   };
@@ -73,6 +101,7 @@ const Cart = () => {
 
   return (
     <Box sx={{ fontFamily: "'Helvetica Neue', sans-serif" }}>
+    <Box sx={{ fontFamily: "'Helvetica Neue', sans-serif" }}>
       {/* Header */}
       <Box
         sx={{
@@ -88,15 +117,30 @@ const Cart = () => {
           zIndex: 1000,
         }}
       >
-        <ArrowBackIcon />
+        {/* Icono de volver */}
+        <IconButton onClick={() => console.log("Volver")}>
+          <ArrowBackIcon />
+        </IconButton>
+
+        {/* Título */}
         <Typography
           variant={isMobile ? "h5" : "h4"}
           sx={{ letterSpacing: "4px", fontWeight: 400 }}
         >
           CARRITO
         </Typography>
-        <ShoppingBagIcon />
+
+        {/* Contenedor de íconos a la derecha */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <IconButton onClick={() => console.log("Carrito")}>
+            <ShoppingBagIcon />
+          </IconButton>
+          <IconButton onClick={() => console.log("Perfil")}>
+            <AccountCircleIcon />
+          </IconButton>
+        </Box>
       </Box>
+    </Box>
 
       {/* Contenido principal */}
       <Box
@@ -194,6 +238,7 @@ const Cart = () => {
                         p: 0.5,
                       }}
                       onClick={() => handleIncrement(item.id)}
+                      disabled={item.quantity >= item.stock}
                     >
                       <AddIcon fontSize="small" />
                     </IconButton>
