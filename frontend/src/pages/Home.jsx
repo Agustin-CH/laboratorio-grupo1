@@ -1,52 +1,21 @@
 import React from "react";
-import { Box, Typography, Stack, Button, useMediaQuery } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
-import PersonIcon from "@mui/icons-material/Person";
-import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
-import MenuIcon from "@mui/icons-material/Menu";
+import { Box, Typography } from "@mui/material";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
+import MainButton from "../components/MainButton";
+import Carousel from "react-material-ui-carousel";
+
+const carouselImages = [
+  "https://plus.unsplash.com/premium_photo-1676225680209-19a398a9b38a?q=80&w=2938&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80",
+  "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=800&q=80"
+];
 
 const Home = () => {
-  const isMobile = useMediaQuery("(max-width:600px)");
-
   return (
     <Box sx={{ fontFamily: "'Helvetica Neue', sans-serif" }}>
       {/* Header */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          px: isMobile ? 2 : 4,
-          py: 2,
-          borderBottom: "1px solid #e0e0e0",
-          position: "sticky",
-          top: 0,
-          bgcolor: "white",
-          zIndex: 1000,
-        }}
-      >
-        <MenuIcon />
-        <Typography
-          variant={isMobile ? "h5" : "h4"}
-          sx={{ letterSpacing: "4px", fontWeight: 400 }}
-        >
-          E-COMMERCE
-        </Typography>
-        <Stack direction="row" spacing={2}>
-          <Stack direction="row" alignItems="center" spacing={0.5}>
-            <SearchIcon fontSize="small" />
-            {!isMobile && <Typography variant="caption">BUSCAR</Typography>}
-          </Stack>
-          <Stack direction="row" alignItems="center" spacing={0.5}>
-            <PersonIcon fontSize="small" />
-            {!isMobile && <Typography variant="caption">CUENTA</Typography>}
-          </Stack>
-          <Stack direction="row" alignItems="center" spacing={0.5}>
-            <ShoppingBagIcon fontSize="small" />
-            {!isMobile && <Typography variant="caption">CARRITO</Typography>}
-          </Stack>
-        </Stack>
-      </Box>
+      <Header />
 
       {/* Hero principal */}
       <Box
@@ -64,6 +33,27 @@ const Home = () => {
           pb: { xs: 6, md: 10 },
         }}
       >
+        {/* Carrusel de imágenes arriba del texto */}
+        <Box sx={{ width: "100%", maxWidth: 600, mb: 4 }}>
+          <Carousel
+            indicators={true}
+            navButtonsAlwaysVisible={true}
+            animation="slide"
+            interval={4000}
+          >
+            {carouselImages.map((img, idx) => (
+              <Box key={idx} sx={{ width: "100%", height: 300, display: "flex", justifyContent: "center", alignItems: "center" }}>
+                <img
+                  src={img}
+                  alt={`Destacado ${idx + 1}`}
+                  style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 8 }}
+                />
+              </Box>
+            ))}
+          </Carousel>
+        </Box>
+
+        {/* Texto principal y botón */}
         <Typography
           variant="h4"
           sx={{
@@ -93,44 +83,13 @@ const Home = () => {
         >
           Accedé a productos únicos desde la comodidad de tu casa.
         </Typography>
-        <Button
-          variant="outlined"
-          sx={{
-            color: "black",
-            borderColor: "black",
-            backgroundColor: "white",
-            px: 4,
-            borderRadius: 0,
-            fontSize: "0.75rem",
-            fontWeight: 600,
-          }}
-        >
+        <MainButton>
           VER PRODUCTOS
-        </Button>
-      </Box>
-
-      {/* Imagen destacada tipo banner scroll */}
-      <Box sx={{ width: "100%", mt: 2 }}>
-        <img
-          src="https://images.unsplash.com/photo-1611078489935-0cb96412ce3a"
-          alt="Banner destacado"
-          style={{ width: "100%", height: "auto", display: "block" }}
-        />
+        </MainButton>
       </Box>
 
       {/* Footer promo */}
-      <Box
-        sx={{
-          backgroundColor: "black",
-          color: "white",
-          textAlign: "center",
-          py: 1,
-          fontSize: "0.75rem",
-          position: "relative",
-        }}
-      >
-        ENVÍO GRATIS EN COMPRAS SUPERIORES A $100.000
-      </Box>
+      <Footer />
     </Box>
   );
 };

@@ -18,15 +18,10 @@ import {
   useMediaQuery,
   Stack,
 } from "@mui/material";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 
-import MenuIcon from "@mui/icons-material/Menu";
-import SearchIcon from "@mui/icons-material/Search";
-import PersonIcon from "@mui/icons-material/Person";
-import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
-
-// Imagen por defecto si alguna falla
 const defaultImage = "https://via.placeholder.com/800?text=Imagen+no+disponible";
-
 const categories = ["Tecnología", "Hogar", "Ropa", "Libros", "Juguetes"];
 
 const products = [
@@ -79,42 +74,8 @@ function ProductCatalog() {
 
   return (
     <Box sx={{ fontFamily: "'Helvetica Neue', sans-serif" }}>
-      {/* HEADER */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          px: isMobile ? 2 : 4,
-          py: 2,
-          borderBottom: "1px solid #e0e0e0",
-          position: "sticky",
-          top: 0,
-          bgcolor: "white",
-          zIndex: 1000,
-        }}
-      >
-        <IconButton onClick={toggleDrawer(true)}>
-          <MenuIcon />
-        </IconButton>
-        <Typography variant={isMobile ? "h5" : "h4"} sx={{ letterSpacing: "4px", fontWeight: 400 }}>
-          E-COMMERCE
-        </Typography>
-        <Stack direction="row" spacing={2}>
-          <Stack direction="row" alignItems="center" spacing={0.5}>
-            <SearchIcon fontSize="small" />
-            {!isMobile && <Typography variant="caption">BUSCAR</Typography>}
-          </Stack>
-          <Stack direction="row" alignItems="center" spacing={0.5}>
-            <PersonIcon fontSize="small" />
-            {!isMobile && <Typography variant="caption">CUENTA</Typography>}
-          </Stack>
-          <Stack direction="row" alignItems="center" spacing={0.5}>
-            <ShoppingBagIcon fontSize="small" />
-            {!isMobile && <Typography variant="caption">CARRITO</Typography>}
-          </Stack>
-        </Stack>
-      </Box>
+      {/* Header reutilizable */}
+      <Header />
 
       {/* DRAWER */}
       <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
@@ -210,33 +171,8 @@ function ProductCatalog() {
         )}
       </Dialog>
 
-      {/* FOOTER PROMO */}
-      <Box
-        sx={{
-          backgroundColor: "black",
-          color: "white",
-          textAlign: "center",
-          py: 1,
-          fontSize: "0.75rem",
-          mt: 6,
-        }}
-      >
-        ENVÍO GRATIS EN COMPRAS SUPERIORES A $100.000
-      </Box>
-      <Box>
-        <Box
-            sx={{
-                backgroundColor: "#f5f5f5",
-                color: "#757575",
-                textAlign: "center",
-                py: 2,
-                fontSize: "0.875rem",
-                borderTop: "1px solid #e0e0e0",
-            }}
-        >
-            © {new Date().getFullYear()} E-COMMERCE. Todos los derechos reservados.
-        </Box>
-      </Box>
+      {/* Footer reutilizable */}
+      <Footer />
     </Box>
   );
 }
