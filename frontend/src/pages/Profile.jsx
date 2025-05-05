@@ -12,6 +12,8 @@ import {
 import PersonIcon from "@mui/icons-material/Person";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import SaveIcon from "@mui/icons-material/Save";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 
 const Profile = () => {
   const isMobile = useMediaQuery("(max-width:600px)");
@@ -41,29 +43,8 @@ const Profile = () => {
 
   return (
     <Box sx={{ fontFamily: "'Helvetica Neue', sans-serif" }}>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          px: isMobile ? 2 : 4,
-          py: 2,
-          borderBottom: "1px solid #e0e0e0",
-          position: "sticky",
-          top: 0,
-          bgcolor: "white",
-          zIndex: 1000,
-        }}
-      >
-        <ArrowBackIcon />
-        <Typography
-          variant={isMobile ? "h5" : "h4"}
-          sx={{ letterSpacing: "4px", fontWeight: 400 }}
-        >
-          E-COMMERCE
-        </Typography>
-        <PersonIcon fontSize="small" />
-      </Box>
+      {/* Header reutilizable */}
+      <Header />
 
       <Box sx={{ maxWidth: 400, mx: "auto", p: isMobile ? 2 : 4 }}>
         <Typography 
@@ -168,19 +149,8 @@ const Profile = () => {
         </Paper>
       </Box>
 
-      <Box
-        sx={{
-          backgroundColor: "black",
-          color: "white",
-          textAlign: "center",
-          py: 1,
-          fontSize: "0.75rem",
-          position: "relative",
-          mt: 4
-        }}
-      >
-        ENVÍO GRATIS EN COMPRAS SUPERIORES A $100.000
-      </Box>
+      {/* Footer reutilizable */}
+      <Footer />
     </Box>
   );
 };

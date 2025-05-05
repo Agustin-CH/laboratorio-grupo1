@@ -20,11 +20,12 @@ import {
   DialogContent,
   DialogActions,
 } from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 
 const initialProducts = [
   {
@@ -108,30 +109,8 @@ const ProductManagement = () => {
 
   return (
     <Box sx={{ fontFamily: "'Helvetica Neue', sans-serif" }}>
-      {/* Header */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          px: isMobile ? 2 : 4,
-          py: 2,
-          borderBottom: "1px solid #e0e0e0",
-          position: "sticky",
-          top: 0,
-          bgcolor: "white",
-          zIndex: 1000,
-        }}
-      >
-        <MenuIcon />
-        <Typography
-          variant={isMobile ? "h5" : "h4"}
-          sx={{ letterSpacing: "4px", fontWeight: 400 }}
-        >
-          GESTIÓN DE PRODUCTOS
-        </Typography>
-        <Box sx={{ width: 40 }} /> {/* Espacio para alinear */}
-      </Box>
+      {/* Header reutilizable */}
+      <Header />
 
       {/* Main area */}
       <Box
@@ -307,19 +286,8 @@ const ProductManagement = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Footer promo */}
-      <Box
-        sx={{
-          backgroundColor: "black",
-          color: "white",
-          textAlign: "center",
-          py: 1,
-          fontSize: "0.75rem",
-          position: "relative",
-        }}
-      >
-        ENVÍO GRATIS EN COMPRAS SUPERIORES A $100.000
-      </Box>
+      {/* Footer reutilizable */}
+      <Footer />
     </Box>
   );
 };
