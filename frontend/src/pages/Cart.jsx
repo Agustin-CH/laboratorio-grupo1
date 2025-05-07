@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect} from "react";
 import {
   Box,
   Typography,
@@ -18,61 +18,17 @@ import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import axios from "axios";
 
 const Cart = () => {
   const isMobile = useMediaQuery("(max-width:600px)");
-  const [cartItems, setCartItems] = React.useState([
-    {
-      id: 1,
-      name: "Camiseta básica blanca",
-      quantity: 2,
-      price: 19.99,
-      stock: 10,
-      image:
-        "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=880&q=80",
-      sizes: ["S", "M", "L", "XL"],
-    },
-    {
-      id: 2,
-      name: "Jeans slim fit azul",
-      quantity: 1,
-      price: 49.99,
-      stock: 5,
-      image:
-        "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80",
-      sizes: ["28", "30", "32", "34"],
-    },
-    {
-      id: 3,
-      name: "Chaqueta denim",
-      quantity: 1,
-      price: 79.99,
-      stock: 3,
-      image:
-        "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=736&q=80",
-      sizes: ["S", "M", "L"],
-    },
-    {
-      id: 4,
-      name: "Vestido floral",
-      quantity: 1,
-      price: 39.99,
-      stock: 7,
-      image:
-        "https://images.unsplash.com/photo-1585487000160-6ebcfceb0d03?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=734&q=80",
-      sizes: ["XS", "S", "M"],
-    },
-    {
-      id: 5,
-      name: "Sudadera con capucha",
-      quantity: 1,
-      price: 45.99,
-      stock: 8,
-      image:
-        "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80",
-      sizes: ["M", "L", "XL"],
-    },
-  ]);
+  const [cartItems, setCartItems] = React.useState([]);
+
+  useEffect(() => {
+    axios.get("http://localhost:3001/cartItems")
+      .then((res) => setCartItems(res.data))
+      .catch((err) => console.error("Error al cargar elementos del carrito:", err));
+  }, []);
 
   const subtotal = cartItems.reduce(
     (acc, item) => acc + item.quantity * item.price,
@@ -82,27 +38,41 @@ const Cart = () => {
   const total = subtotal + shippingCost;
 
   const handleIncrement = (id) => {
-    setCartItems(
-      cartItems.map((item) =>
-        item.id === id && item.quantity < item.stock
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      )
-    );
+    const item = cartItems.find((i) => i.id === id);
+    if(item && item.quantity < item.stock) {
+     const updatedItem = { ...item, quantity: item.quantity + 1};
+
+     axios.put(`http://localhost:3001/cartItems/${id}`, updatedItem)
+      .then(() => {
+        setCartItems((prevItems) =>
+          prevItems.map((i) => (i.id === id ? updatedItem : i))
+        );
+      })
+      .catch((err) => console.error("Error al actualizar el carrito:", err));
+   }
   };
 
   const handleDecrement = (id) => {
-    setCartItems(
-      cartItems.map((item) =>
-        item.id === id
-          ? { ...item, quantity: Math.max(1, item.quantity - 1) }
-          : item
-      )
-    );
+   const item = cartItems.find((i) => i.id === id);
+   if(item && item.quantity > 1) {
+    const updatedItem = { ...item, quantity: item.quantity - 1};
+
+    axios.put(`http://localhost:3001/cartItems/${id}`, updatedItem)
+      .then(() => {
+        setCartItems((prevItems) =>
+          prevItems.map((i) => (i.id === id ? updatedItem : i))
+        );
+      })
+      .catch((err) => console.error("Error al actualizar el carrito:", err));
+   }
   };
 
   const handleRemove = (id) => {
-    setCartItems(cartItems.filter((item) => item.id !== id));
+    axios.delete(`http://localhost:3001/cartItems/${id}`)
+      .then(() => {
+        setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
+      })
+      .catch((err) => console.error("Error al eliminar el producto:", err));
   };
 
   return (
