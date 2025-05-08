@@ -4,6 +4,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import MainButton from "../components/MainButton";
 import Carousel from "react-material-ui-carousel";
+import { Link } from "react-router-dom";
 
 const carouselImages = [
   "https://plus.unsplash.com/premium_photo-1676225680209-19a398a9b38a?q=80&w=2938&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
@@ -20,17 +21,18 @@ const Home = () => {
       {/* Hero principal */}
       <Box
         sx={{
-          height: { xs: "100vh", md: "90vh" },
+          height: { xs: "100vh", md: "80vh" },
           backgroundImage: `url("https://images.unsplash.com/photo-1604335399109-8adf5da42863")`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
           display: "flex",
           alignItems: "center",
-          justifyContent: "flex-end",
+          justifyContent: "flex-start",
           flexDirection: "column",
           px: 2,
-          pb: { xs: 6, md: 10 },
+          pt: { xs: 6, md: 10 },
+          pb: 2,
         }}
       >
         {/* Carrusel de imágenes arriba del texto */}
@@ -83,7 +85,28 @@ const Home = () => {
         >
           Accedé a productos únicos desde la comodidad de tu casa.
         </Typography>
-        <MainButton>
+        <MainButton
+          component={Link}
+          to="/catalogo"
+          sx={{
+            mt: 2,
+            px: 4,
+            py: 1.2,
+            fontWeight: 700,
+            fontSize: "1rem",
+            borderRadius: 3,
+            backgroundColor: "black",
+            color: "white",
+            border: "none",
+            boxShadow: 2,
+            transition: "background 0.2s, color 0.2s, box-shadow 0.2s",
+            "&:hover": {
+              backgroundColor: "#222",
+              color: "#ffd700",
+              boxShadow: 4,
+            },
+          }}
+        >
           VER PRODUCTOS
         </MainButton>
       </Box>
