@@ -1,12 +1,12 @@
-import React, {useState} from "react";
-import { Box, Typography, Stack, IconButton, TextField  } from "@mui/material";
+import React, { useState } from "react";
+import { Box, Typography, Stack, IconButton } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import PersonIcon from "@mui/icons-material/Person";
 import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
-import MenuIcon from "@mui/icons-material/Menu";
+import HomeIcon from "@mui/icons-material/Home";
+import LoginIcon from "@mui/icons-material/Login"; // Importa el icono de login
 import Button from "@mui/material/Button";
 import { Link, useNavigate } from "react-router-dom";
-
 
 const Header = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -45,7 +45,14 @@ const Header = () => {
         width: "100%",
       }}
     >
-      <MenuIcon />
+      <IconButton
+        component={Link}
+        to="/home"
+        sx={{ color: "black" }}
+        aria-label="Inicio"
+      >
+        <HomeIcon />
+      </IconButton>
       <Typography
         variant="h4"
         sx={{ letterSpacing: "4px", fontWeight: 400 }}
@@ -53,72 +60,88 @@ const Header = () => {
         E-COMMERCE
       </Typography>
       <Stack direction="row" spacing={2}>
-      <Button
+        <Button
           sx={{
             display: "flex",
             flexDirection: "row",
             alignItems: "center",
             gap: 0.5,
             padding: 0,
-            minWidth: 0, // Para que el botón se ajuste al contenido
+            minWidth: 0,
             color: "black",
             "&:hover": {
               backgroundColor: "rgba(0,0,0,0.04)",
             }
           }}
           onClick={() => {
-            // Aquí puedes agregar la lógica para la cuenta
             console.log("Buscar producto");
           }}
         >
           <SearchIcon fontSize="small" />
           <Typography variant="caption">BUSCAR</Typography>
-        </Button>        
+        </Button>
         <Button
           component={Link}
-          to="http://localhost:3000/mi-perfil"
+          to="/mi-perfil"
           sx={{
             display: "flex",
             flexDirection: "row",
             alignItems: "center",
             gap: 0.5,
             padding: 0,
-            minWidth: 0, // Para que el botón se ajuste al contenido
+            minWidth: 0,
             color: "black",
             "&:hover": {
               backgroundColor: "rgba(0,0,0,0.04)",
             }
           }}
           onClick={() => {
-            // Aquí puedes agregar la lógica para la cuenta
             console.log("Ir a la cuenta");
           }}
         >
           <PersonIcon fontSize="small" />
           <Typography variant="caption">CUENTA</Typography>
-        </Button>       
+        </Button>
         <Button
-        component={Link}
-        to="http://localhost:3000/carrito"
+          component={Link}
+          to="/carrito"
           sx={{
             display: "flex",
             flexDirection: "row",
             alignItems: "center",
             gap: 0.5,
             padding: 0,
-            minWidth: 0, // Para que el botón se ajuste al contenido
+            minWidth: 0,
             color: "black",
             "&:hover": {
               backgroundColor: "rgba(0,0,0,0.04)",
             }
           }}
           onClick={() => {
-            // Aquí puedes agregar la lógica para la cuenta
             console.log("Ir al carrito");
           }}
         >
           <ShoppingBagIcon fontSize="small" />
           <Typography variant="caption">CARRITO</Typography>
+        </Button>
+        <Button
+          component={Link}
+          to="/usuarios"
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 0.5,
+            padding: 0,
+            minWidth: 0,
+            color: "black",
+            "&:hover": {
+              backgroundColor: "rgba(0,0,0,0.04)",
+            }
+          }}
+        >
+          <LoginIcon fontSize="small" />
+          <Typography variant="caption">LOGIN</Typography>
         </Button>
       </Stack>
     </Box>
