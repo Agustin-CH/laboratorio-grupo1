@@ -4,6 +4,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import PersonIcon from "@mui/icons-material/Person";
 import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import HomeIcon from "@mui/icons-material/Home";
+import LoginIcon from "@mui/icons-material/Login"; // Importa el icono de login
 import Button from "@mui/material/Button";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -122,6 +123,25 @@ const Header = () => {
         >
           <ShoppingBagIcon fontSize="small" />
           <Typography variant="caption">CARRITO</Typography>
+        </Button>
+        <Button
+          component={Link}
+          to="/usuarios"
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 0.5,
+            padding: 0,
+            minWidth: 0,
+            color: "black",
+            "&:hover": {
+              backgroundColor: "rgba(0,0,0,0.04)",
+            }
+          }}
+        >
+          <LoginIcon fontSize="small" />
+          <Typography variant="caption">LOGIN</Typography>
         </Button>
       </Stack>
     </Box>
