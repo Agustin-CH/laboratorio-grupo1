@@ -7,6 +7,7 @@ import ProductCatalog from "./pages/ProductCatalog";
 import Cart from "./pages/Cart";
 import ProductManagement from "./pages/ProductManagement";
 import Profile from "./pages/Profile";
+import Checkout from "./pages/Checkout";
 import PreguntasFrecuentes from "./pages/PreguntasFrecuentes";
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
           <Route path="/gestion-productos" element={<ProductManagement />} />
           <Route path="/mi-perfil" element={<Profile />} />
           <Route path="/home" element={<Home />} />
+          <Route path="/checkout" element={<Checkout />} />
           <Route path="/preguntas-frecuentes" element={<PreguntasFrecuentes />} />
         </Routes>
       </Container>

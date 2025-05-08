@@ -19,6 +19,7 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import axios from "axios";
+import { Link } from "react-router-dom";
 
 const Cart = () => {
   const isMobile = useMediaQuery("(max-width:600px)");
@@ -267,6 +268,8 @@ const Cart = () => {
             </Box>
 
             <Button
+              component={Link}
+              to="http://localhost:3000/checkout"
               variant="contained"
               fullWidth
               sx={{
@@ -284,6 +287,8 @@ const Cart = () => {
           </Paper>
 
           <Button
+           component={Link}
+           to="http://localhost:3000/catalogo"
             variant="outlined"
             fullWidth
             sx={{

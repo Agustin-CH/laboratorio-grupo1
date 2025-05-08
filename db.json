@@ -3,7 +3,7 @@
     {
       "id": "3",
       "name": "Chaqueta denim",
-      "quantity": 3,
+      "quantity": 1,
       "price": 79.99,
       "stock": 3,
       "image": "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=736&q=80",
@@ -16,7 +16,7 @@
     {
       "id": "4",
       "name": "Vestido floral",
-      "quantity": 7,
+      "quantity": 2,
       "price": 39.99,
       "stock": 7,
       "image": "https://images.unsplash.com/photo-1585487000160-6ebcfceb0d03?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=734&q=80",
@@ -29,7 +29,7 @@
     {
       "id": "5",
       "name": "Sudadera con capucha",
-      "quantity": 1,
+      "quantity": 8,
       "price": 45.99,
       "stock": 8,
       "image": "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80",
@@ -38,6 +38,51 @@
         "L",
         "XL"
       ]
+    },
+    {
+      "id": "6",
+      "name": "Teclado mecánico RGB",
+      "quantity": 1,
+      "price": 129.99,
+      "stock": 15,
+      "image": "https://images.unsplash.com/photo-1555212697-194d092e3b8f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=870&q=80",
+      "sizes": []
+    },
+    {
+      "id": "7",
+      "name": "Mouse inalámbrico",
+      "quantity": 2,
+      "price": 35.5,
+      "stock": 25,
+      "image": "https://images.unsplash.com/photo-1562783873-5c5113c12a31?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=870&q=80",
+      "sizes": []
+    },
+    {
+      "id": "8",
+      "name": "Monitor 27 pulgadas 4K",
+      "quantity": 1,
+      "price": 399,
+      "stock": 5,
+      "image": "https://images.unsplash.com/photo-1593784973163-859282032921?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=870&q=80",
+      "sizes": []
+    },
+    {
+      "id": "9",
+      "name": "Auriculares Bluetooth",
+      "quantity": 4,
+      "price": 89.99,
+      "stock": 12,
+      "image": "https://images.unsplash.com/photo-1577485871888-146319290116?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=870&q=80",
+      "sizes": []
+    },
+    {
+      "id": "10",
+      "name": "Libro: El Señor de los Anillos",
+      "quantity": 2,
+      "price": 25.75,
+      "stock": 30,
+      "image": "https://unsplash.com/es/fotos/libro-milk-and-honey-de-rupi-kaur-en-la-mesa-auxiliar-CXYPfveiuis",
+      "sizes": []
     }
   ]
 }
