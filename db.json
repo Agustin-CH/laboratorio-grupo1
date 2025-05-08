@@ -3,7 +3,7 @@
     {
       "id": "3",
       "name": "Chaqueta denim",
-      "quantity": 3,
+      "quantity": 2,
       "price": 79.99,
       "stock": 3,
       "image": "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=736&q=80",
@@ -16,7 +16,7 @@
     {
       "id": "4",
       "name": "Vestido floral",
-      "quantity": 7,
+      "quantity": 3,
       "price": 39.99,
       "stock": 7,
       "image": "https://images.unsplash.com/photo-1585487000160-6ebcfceb0d03?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=734&q=80",
@@ -29,7 +29,7 @@
     {
       "id": "5",
       "name": "Sudadera con capucha",
-      "quantity": 1,
+      "quantity": 8,
       "price": 45.99,
       "stock": 8,
       "image": "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80",
