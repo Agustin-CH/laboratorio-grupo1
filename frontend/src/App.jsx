@@ -13,10 +13,8 @@ function App() {
     <Router>
       <Container maxWidth="md">
         <Routes>
-          {/* Redirige la raíz al catálogo */}
           <Route path="/" element={<Navigate to="/catalogo" replace />} />
 
-          {/* Vistas */}
           <Route path="/catalogo" element={<ProductCatalog />} />
           <Route path="/usuarios" element={<UserManagement />} />
           <Route path="/carrito" element={<Cart />} />
