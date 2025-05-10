@@ -1,33 +1,18 @@
-import React, { useState } from "react";
-import { Box, Typography, Stack, IconButton } from "@mui/material";
+import React, { useState, useContext } from "react";
+import { Box, Typography, Stack, IconButton, Button } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import PersonIcon from "@mui/icons-material/Person";
 import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import HomeIcon from "@mui/icons-material/Home";
-import LoginIcon from "@mui/icons-material/Login"; // Importa el icono de login
-import Button from "@mui/material/Button";
+import LoginIcon from "@mui/icons-material/Login";
+import LogoutIcon from "@mui/icons-material/Logout";
 import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext"; // Importa el contexto
 
 const Header = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
-
-  const handleSearchChange = (event) => {
-    setSearchTerm(event.target.value);
-  };
-
-  const handleSearchSubmit = () => {
-    if (searchTerm.trim()) {
-      navigate();
-      setSearchTerm("");
-    }
-  };
-
-  const handleKeyPress = (event) => {
-    if (event.key === "Enter") {
-      handleSearchSubmit();
-    }
-  };
+  const { user, logout } = useContext(AuthContext); // Usa el contexto
 
   return (
     <Box
@@ -73,9 +58,6 @@ const Header = () => {
               backgroundColor: "rgba(0,0,0,0.04)",
             }
           }}
-          onClick={() => {
-            console.log("Buscar producto");
-          }}
         >
           <SearchIcon fontSize="small" />
           <Typography variant="caption">BUSCAR</Typography>
@@ -95,12 +77,11 @@ const Header = () => {
               backgroundColor: "rgba(0,0,0,0.04)",
             }
           }}
-          onClick={() => {
-            console.log("Ir a la cuenta");
-          }}
         >
           <PersonIcon fontSize="small" />
-          <Typography variant="caption">CUENTA</Typography>
+          <Typography variant="caption">
+            {user ? user.nombre : "CUENTA"}
+          </Typography>
         </Button>
         <Button
           component={Link}
@@ -117,32 +98,53 @@ const Header = () => {
               backgroundColor: "rgba(0,0,0,0.04)",
             }
           }}
-          onClick={() => {
-            console.log("Ir al carrito");
-          }}
         >
           <ShoppingBagIcon fontSize="small" />
           <Typography variant="caption">CARRITO</Typography>
         </Button>
-        <Button
-          component={Link}
-          to="/usuarios"
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 0.5,
-            padding: 0,
-            minWidth: 0,
-            color: "black",
-            "&:hover": {
-              backgroundColor: "rgba(0,0,0,0.04)",
-            }
-          }}
-        >
-          <LoginIcon fontSize="small" />
-          <Typography variant="caption">LOGIN</Typography>
-        </Button>
+        {user ? (
+          <Button
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 0.5,
+              padding: 0,
+              minWidth: 0,
+              color: "black",
+              "&:hover": {
+                backgroundColor: "rgba(0,0,0,0.04)",
+              }
+            }}
+            onClick={() => {
+              logout();
+              navigate("/home");
+            }}
+          >
+            <LogoutIcon fontSize="small" />
+            <Typography variant="caption">LOGOUT</Typography>
+          </Button>
+        ) : (
+          <Button
+            component={Link}
+            to="/usuarios"
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 0.5,
+              padding: 0,
+              minWidth: 0,
+              color: "black",
+              "&:hover": {
+                backgroundColor: "rgba(0,0,0,0.04)",
+              }
+            }}
+          >
+            <LoginIcon fontSize="small" />
+            <Typography variant="caption">LOGIN</Typography>
+          </Button>
+        )}
       </Stack>
     </Box>
   );
