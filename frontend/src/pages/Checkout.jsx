@@ -26,41 +26,12 @@ const steps = ["Información de Envío", "Información de Pago", "Revisar Pedido
 
 const Checkout = () => {
   const [activeStep, setActiveStep] = useState(0);
-  const [shippingData, setShippingData] = useState({
-    nombre: "",
-    apellido: "",
-    direccion: "",
-    ciudad: "",
-    codigoPostal: "",
-    pais: "",
-    telefono: "",
-  });
-
-  const [shippingErrors, setShippingErrors] = useState({
-    nombre: "",
-    apellido: "",
-    direccion: "",
-    ciudad: "",
-    codigoPostal: "",
-    pais: "",
-    telefono: "",
-  });
-
-  
-
-  const [paymentMethod, setPaymentMethod] = useState("credit-card");
-  const [paymentData, setPaymentData] = useState({
-    cardNumber: "",
-    expiryDate: "",
-    cvv: "",
-    saveCard: false,
-  });
-
-  const [paymentErrors, setPaymentErrors] = useState({
-    cardNumber: "",
-    expiryDate: "",
-    cvv: "",
-  });
+    const [shippingData, setShippingData] = useState({ /* ... */ });
+    const [shippingErrors, setShippingErrors] = useState({ /* ... */ });
+    const [paymentMethod, setPaymentMethod] = useState("credit-card");
+    const [paymentData, setPaymentData] = useState({ /* ... */ });
+    const [paymentErrors, setPaymentErrors] = useState({ /* ... */ });
+    const [paypalPaymentInProgress, setPaypalPaymentInProgress] = useState(false);
 
 
   const handleBack = () => {
@@ -169,25 +140,56 @@ const Checkout = () => {
     return isValid;
   };
 
-  const handleNext = () => {
-    if (activeStep === 0) {
-      if (validateShipping()) {
-        setActiveStep((prevActiveStep) => prevActiveStep + 1);
-      }
-    } else if (activeStep === 1) {
-      // Implementa la validación para la información de pago aquí
-      if (validatePayment()){
-        setActiveStep((prevActiveStep) => prevActiveStep + 1);
-      } 
-    } else {
-      // Lógica para finalizar la compra
-      console.log("Pedido finalizado", shippingData, paymentData);
-    }
-  };
+    const handleNext = () => {
+        if (activeStep === 0) {
+            if (validateShipping()) {
+                setActiveStep((prevActiveStep) => prevActiveStep + 1);
+            }
+        } else if (activeStep === 1) {
+            if (paymentMethod === "credit-card") {
+                if (validatePayment()) {
+                    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+                }
+            } else if (paymentMethod === "paypal") {
+                // Simulación del inicio del pago con PayPal
+                setPaypalPaymentInProgress(true);
+                console.log("Simulando redirección a PayPal...");
+                setTimeout(() => {
+                    // Simulación de que PayPal devuelve la autorización
+                    alert("Simulación: Pago con PayPal autorizado.");
+                    setPaypalPaymentInProgress(false);
+                    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+                }, 3000);
+            } else {
+                setActiveStep((prevActiveStep) => prevActiveStep + 1);
+            }
+        } else {
+            console.log("Pedido finalizado", shippingData, paymentData, obtenerCarrito());
+            alert("Gracias por su compra!");
+        }
+    };
 
   const handlePaymentMethodChange = (event) => {
     setPaymentMethod(event.target.value);
   };
+
+  const obtenerCarrito = () => {
+  const carritoGuardado = localStorage.getItem('carrito');
+  return carritoGuardado ? JSON.parse(carritoGuardado) : [];
+};
+
+const calcularSubtotal = () => {
+  return obtenerCarrito().reduce((acc, item) => acc + item.price * item.quantity, 0);
+};
+
+const calcularEnvio = () => {
+  const subtotal = calcularSubtotal();
+  return subtotal > 100 ? 0 : 10; // Ejemplo: envío gratis si el subtotal es mayor a $100
+};
+
+const calcularTotal = () => {
+  return calcularSubtotal() + calcularEnvio();
+};
 
   return (
     <Box sx={{ fontFamily: "'Helvetica Neue', sans-serif" }}>
@@ -313,6 +315,8 @@ const Checkout = () => {
           </Paper>
         )}
 
+        
+
         {activeStep === 1 && (
           <Paper sx={{ p: 3, mb: 3, border: "1px solid #f0f0f0" }}>
             <Typography variant="h6" gutterBottom sx={{ fontWeight: 500 }}>
@@ -393,6 +397,40 @@ const Checkout = () => {
               </Box>
             )}
 
+                                    {paymentMethod === "paypal" && (
+                            <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <Typography variant="subtitle1" gutterBottom>
+                                    Pagar con PayPal
+                                </Typography>
+                                {/* Botón de PayPal simulado */}
+                                <Button
+                                    variant="contained"
+                                    color="warning" // Puedes usar un color distintivo para PayPal
+                                    onClick={() => {
+                                        setPaypalPaymentInProgress(true);
+                                        console.log("Botón de PayPal simulado clickeado");
+                                        setTimeout(() => {
+                                            alert("Simulación: Redirigiendo a PayPal...");
+                                            setTimeout(() => {
+                                                alert("Simulación: Pago con PayPal autorizado.");
+                                                setPaypalPaymentInProgress(false);
+                                                setActiveStep((prevActiveStep) => prevActiveStep + 1);
+                                            }, 2000); // Simula el tiempo de procesamiento de PayPal
+                                        }, 1500); // Simula la redirección
+                                    }}
+                                    disabled={paypalPaymentInProgress}
+                                    sx={{ backgroundColor: '#ffc439', color: '#000', '&:hover': { backgroundColor: '#e0b330' } }}
+                                >
+                                    {paypalPaymentInProgress ? "Procesando PayPal..." : "Pagar con PayPal"}
+                                </Button>
+                                {paypalPaymentInProgress && (
+                                    <Typography variant="caption" color="textSecondary" sx={{ mt: 1 }}>
+                                        Simulando conexión segura con PayPal...
+                                    </Typography>
+                                )}
+                            </Box>
+                        )}
+
             <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}>
               <Button onClick={handleBack}>Atrás</Button>
               <Button variant="contained" color="primary" onClick={handleNext}>
@@ -400,26 +438,86 @@ const Checkout = () => {
               </Button>
             </Box>
           </Paper>
+          
         )}
 
 {activeStep === 2 && (
-          <Paper sx={{ p: 3, mb: 3, border: "1px solid #f0f0f0" }}>
-            <Typography variant="h6" gutterBottom sx={{ fontWeight: 500 }}>
-              Revisar Pedido
-            </Typography>
-            {/* ... Muestra el resumen del pedido (productos, envío, pago) ... */}
-            <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}>
-              <Button onClick={handleBack}>Atrás</Button>
-              <Button variant="contained" color="primary" onClick={handleNext}>
-                Pagar Ahora
-              </Button>
-            </Box>
-          </Paper>
-        )}
+  <Paper sx={{ p: 3, mb: 3, border: "1px solid #f0f0f0" }}>
+    <Typography variant="h6" gutterBottom sx={{ fontWeight: 500 }}>
+      Revisar Pedido
+    </Typography>
+
+    <Typography variant="h6" sx={{ mt: 2, fontWeight: 500 }}>
+      Información de Envío:
+    </Typography>
+    <Typography>Nombre: {shippingData.nombre} {shippingData.apellido}</Typography>
+    <Typography>Dirección: {shippingData.direccion}</Typography>
+    <Typography>Ciudad: {shippingData.ciudad}, Código Postal: {shippingData.codigoPostal}</Typography>
+    <Typography>País: {shippingData.pais}</Typography>
+    <Typography>Teléfono: {shippingData.telefono}</Typography>
+
+    <Divider sx={{ my: 2 }} />
+
+    <Typography variant="h6" sx={{ mt: 2, fontWeight: 500 }}>
+      Información de Pago:
+    </Typography>
+    <Typography>Método de Pago: {paymentMethod === 'credit-card' ? 'Tarjeta de Crédito' : paymentMethod === 'paypal' ? 'PayPal' : paymentMethod}</Typography>
+    {paymentMethod === 'credit-card' && (
+      <>
+        <Typography>Número de Tarjeta: ****-****-****-{paymentData.cardNumber.slice(-4)}</Typography>
+        <Typography>Fecha de Expiración: {paymentData.expiryDate}</Typography>
+      </>
+    )}
+    {paymentData.saveCard && <Typography>Guardar tarjeta: Sí</Typography>}
+
+    <Divider sx={{ my: 2 }} />
+
+    <Typography variant="h6" sx={{ mt: 2, fontWeight: 500 }}>
+      Resumen del Pedido:
+    </Typography>
+    {/* Aquí vamos a mostrar los productos del carrito */}
+    {obtenerCarrito().length > 0 ? (
+      obtenerCarrito().map((item) => (
+        <Box key={item.id} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1 }}>
+          <Typography>{item.name} ({item.quantity})</Typography>
+          <Typography>${(item.price * item.quantity).toFixed(2)}</Typography>
+        </Box>
+      ))
+    ) : (
+      <Typography>No hay productos en el carrito.</Typography>
+    )}
+
+    <Divider sx={{ my: 2 }} />
+
+    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+      <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>Subtotal:</Typography>
+      <Typography variant="subtitle1">${calcularSubtotal().toFixed(2)}</Typography>
+    </Box>
+    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+      <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>Envío:</Typography>
+      <Typography variant="subtitle1">${calcularEnvio().toFixed(2)}</Typography>
+    </Box>
+    <Divider sx={{ my: 1 }} />
+    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+      <Typography variant="h6" sx={{ fontWeight: 700 }}>Total:</Typography>
+      <Typography variant="h6">${calcularTotal().toFixed(2)}</Typography>
+    </Box>
+
+    <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}>
+      <Button onClick={handleBack}>Atrás</Button>
+      <Button variant="contained" color="primary" onClick={() => console.log("Pedido Confirmado", shippingData, paymentData, obtenerCarrito())}>
+        Confirmar Pedido
+      </Button>
+    </Box>
+  </Paper>
+)}
+
       </Box>
       <Footer />
     </Box>
   );
 };
+
+
 
 export default Checkout;
