@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -20,53 +20,62 @@ import {
 } from "@mui/material";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import axios from "axios";
 
-const defaultImage = "https://via.placeholder.com/800?text=Imagen+no+disponible";
+const defaultImage =
+  "https://via.placeholder.com/800?text=Imagen+no+disponible";
 const categories = ["Tecnología", "Hogar", "Ropa", "Libros", "Juguetes"];
 
-const products = [
-  {
-    name: "Auriculares",
-    image: "https://images.unsplash.com/photo-1583360173899-b3124bc238d9?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    description: "Auriculares con cancelación de ruido",
-    stock: true,
-  },
-  {
-    name: "Lámpara",
-    image: "https://images.unsplash.com/photo-1652161854022-91f94b974d73?q=80&w=1472&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    description: "Lámpara de escritorio LED",
-    stock: false,
-  },
-  {
-    name: "Zapatillas",
-    image: "https://images.unsplash.com/photo-1608231387042-66d1773070a5?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    description: "Zapatillas deportivas",
-    stock: true,
-  },
-  {
-    name: "Libro",
-    image: "https://images.unsplash.com/photo-1689289850637-65e74bf075f5?q=80&w=1450&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    description: "Libro de ciencia ficción",
-    stock: true,
-  },
-  {
-    name: "Monitor",
-    image: "https://plus.unsplash.com/premium_photo-1680721575441-18d5a0567269?q=80&w=1404&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    description: 'Monitor 27" Full HD',
-    stock: true,
-  },
-  {
-    name: "Silla Gamer",
-    image: "https://images.unsplash.com/photo-1594501252356-79ebbbb10dd9?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    description: "Silla ergonómica para gaming",
-    stock: true,
-  },
-];
-
 function ProductCatalog() {
+  const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const isMobile = useMediaQuery("(max-width:600px)");
+
+  //funciones para obtener el carrito
+  const obtenerCarrito = () => {
+    const carritoGuardado = localStorage.getItem("carrito");
+    if (carritoGuardado) {
+      return JSON.parse(carritoGuardado);
+    } else {
+      return [];
+    }
+  };
+
+  const guardarCarrito = (carrito) => {
+    localStorage.setItem("carrito", JSON.stringify(carrito));
+  };
+
+  const agregarAlCarrito = (producto) => {
+    const carritoActual = obtenerCarrito();
+    const productoExistente = carritoActual.find(
+      (item) => item.id === producto.id
+    );
+
+    if (productoExistente) {
+      productoExistente.quantity = (productoExistente.quantity || 0) + 1;
+      console.log(`Cantidad de "${producto.name}" incrementada.`);
+    } else {
+      carritoActual.push({ ...producto, quantity: 1, price: producto.price });
+      console.log(`"${producto.name}" agregado al carrito.`);
+    }
+
+    guardarCarrito(carritoActual);
+    // Opcional: Mostrar un mensaje o actualizar un contador visual del carrito
+  };
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get("http://localhost:3001/products");
+        setProducts(response.data);
+      } catch (error) {
+        console.error("Error al cargar productos:", error);
+      }
+    };
+
+    fetchProducts();
+  }, []); // El array vacío asegura que esto se ejecute solo una vez al montar el componente
 
   const toggleDrawer = (open) => () => {
     setDrawerOpen(open);
@@ -79,7 +88,12 @@ function ProductCatalog() {
 
       {/* DRAWER */}
       <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
-        <Box width={250} role="presentation" onClick={toggleDrawer(false)} onKeyDown={toggleDrawer(false)}>
+        <Box
+          width={250}
+          role="presentation"
+          onClick={toggleDrawer(false)}
+          onKeyDown={toggleDrawer(false)}
+        >
           <Typography variant="h6" sx={{ p: 2 }}>
             Categorías
           </Typography>
@@ -109,8 +123,8 @@ function ProductCatalog() {
         <Grid container spacing={3}>
           {products
             .sort((a, b) => a.name.localeCompare(b.name))
-            .map((product, index) => (
-              <Grid item xs={12} sm={6} md={4} key={index}>
+            .map((product) => (
+              <Grid item xs={12} sm={6} md={4} key={product.id}>
                 <Card
                   onClick={() => setSelectedProduct(product)}
                   sx={{
@@ -134,7 +148,11 @@ function ProductCatalog() {
                     }}
                   />
                   <CardContent>
-                    <Typography variant="h6" align="center" sx={{ fontWeight: 500 }}>
+                    <Typography
+                      variant="h6"
+                      align="center"
+                      sx={{ fontWeight: 500 }}
+                    >
                       {product.name}
                     </Typography>
                   </CardContent>
@@ -145,7 +163,11 @@ function ProductCatalog() {
       </Box>
 
       {/* MODAL */}
-      <Dialog open={Boolean(selectedProduct)} onClose={() => setSelectedProduct(null)} fullWidth>
+      <Dialog
+        open={Boolean(selectedProduct)}
+        onClose={() => setSelectedProduct(null)}
+        fullWidth
+      >
         {selectedProduct && (
           <>
             <DialogTitle>{selectedProduct.name}</DialogTitle>
@@ -154,7 +176,12 @@ function ProductCatalog() {
                 src={selectedProduct.image}
                 alt={selectedProduct.name}
                 onError={(e) => (e.target.src = defaultImage)}
-                style={{ width: "100%", height: "250px", objectFit: "cover", marginBottom: "1rem" }}
+                style={{
+                  width: "100%",
+                  height: "250px",
+                  objectFit: "cover",
+                  marginBottom: "1rem",
+                }}
               />
               <Typography>{selectedProduct.description}</Typography>
               <Button
@@ -163,6 +190,7 @@ function ProductCatalog() {
                 fullWidth
                 style={{ marginTop: "1rem" }}
                 disabled={!selectedProduct.stock}
+                onClick={() => agregarAlCarrito(selectedProduct)}
               >
                 {selectedProduct.stock ? "Agregar al Carrito" : "Sin Stock"}
               </Button>

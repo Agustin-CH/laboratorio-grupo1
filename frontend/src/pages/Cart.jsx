@@ -1,4 +1,4 @@
-import React, {useEffect} from "react";
+import React, { useEffect } from "react";
 import {
   Box,
   Typography,
@@ -13,23 +13,36 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Cart = () => {
   const isMobile = useMediaQuery("(max-width:600px)");
   const [cartItems, setCartItems] = React.useState([]);
+  const navigate = useNavigate();
+
+  const obtenerCarrito = () => {
+    const carritoGuardado = localStorage.getItem("carrito");
+    if (carritoGuardado) {
+      return JSON.parse(carritoGuardado);
+    } else {
+      return [];
+    }
+  };
+
+  const guardarCarrito = (carrito) => {
+    localStorage.setItem("carrito", JSON.stringify(carrito));
+  };
 
   useEffect(() => {
-    axios.get("http://localhost:3001/cartItems")
-      .then((res) => setCartItems(res.data))
-      .catch((err) => console.error("Error al cargar elementos del carrito:", err));
+    const carritoInicial = obtenerCarrito();
+    setCartItems(carritoInicial);
   }, []);
+
+  useEffect(() => {
+    guardarCarrito(cartItems);
+  }, [cartItems]);
 
   const subtotal = cartItems.reduce(
     (acc, item) => acc + item.quantity * item.price,
@@ -39,41 +52,34 @@ const Cart = () => {
   const total = subtotal + shippingCost;
 
   const handleIncrement = (id) => {
-    const item = cartItems.find((i) => i.id === id);
-    if(item && item.quantity < item.stock) {
-     const updatedItem = { ...item, quantity: item.quantity + 1};
-
-     axios.put(`http://localhost:3001/cartItems/${id}`, updatedItem)
-      .then(() => {
-        setCartItems((prevItems) =>
-          prevItems.map((i) => (i.id === id ? updatedItem : i))
-        );
-      })
-      .catch((err) => console.error("Error al actualizar el carrito:", err));
-   }
+    setCartItems((prevItems) =>
+      prevItems.map((item) =>
+        item.id === id && item.quantity < item.stock
+          ? { ...item, quantity: item.quantity + 1 }
+          : item
+      )
+    );
   };
-
   const handleDecrement = (id) => {
-   const item = cartItems.find((i) => i.id === id);
-   if(item && item.quantity > 1) {
-    const updatedItem = { ...item, quantity: item.quantity - 1};
-
-    axios.put(`http://localhost:3001/cartItems/${id}`, updatedItem)
-      .then(() => {
-        setCartItems((prevItems) =>
-          prevItems.map((i) => (i.id === id ? updatedItem : i))
-        );
-      })
-      .catch((err) => console.error("Error al actualizar el carrito:", err));
-   }
+    setCartItems((prevItems) =>
+      prevItems.map((item) =>
+        item.id === id && item.quantity > 1
+          ? { ...item, quantity: item.quantity - 1 }
+          : item
+      )
+    );
   };
 
   const handleRemove = (id) => {
-    axios.delete(`http://localhost:3001/cartItems/${id}`)
-      .then(() => {
-        setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
-      })
-      .catch((err) => console.error("Error al eliminar el producto:", err));
+    setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
+  };
+
+  const handleFinalizarCompra = () => {
+    if (cartItems.length > 0) {
+      navigate("/checkout");
+    } else {
+      alert("El carrito esta vacío");
+    }
   };
 
   return (
@@ -249,7 +255,9 @@ const Cart = () => {
                 }}
               >
                 <Typography variant="body2">Envío:</Typography>
-                <Typography variant="body2">${shippingCost.toFixed(2)}</Typography>
+                <Typography variant="body2">
+                  ${shippingCost.toFixed(2)}
+                </Typography>
               </Box>
               <Divider sx={{ my: 1.5 }} />
               <Box
@@ -268,8 +276,7 @@ const Cart = () => {
             </Box>
 
             <Button
-              component={Link}
-              to="http://localhost:3000/checkout"
+              onClick={handleFinalizarCompra}
               variant="contained"
               fullWidth
               sx={{
@@ -281,14 +288,15 @@ const Cart = () => {
                   backgroundColor: "#333",
                 },
               }}
+              disabled={cartItems.length === 0}
             >
               FINALIZAR COMPRA
             </Button>
           </Paper>
 
           <Button
-           component={Link}
-           to="http://localhost:3000/catalogo"
+            component={Link}
+            to="http://localhost:3000/catalogo"
             variant="outlined"
             fullWidth
             sx={{
