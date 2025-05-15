@@ -1,7 +1,5 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
 import MainButton from "../components/MainButton";
 import Carousel from "react-material-ui-carousel";
 import { Link } from "react-router-dom";
@@ -15,9 +13,6 @@ const carouselImages = [
 const Home = () => {
   return (
     <Box sx={{ fontFamily: "'Helvetica Neue', sans-serif" }}>
-      {/* Header */}
-      <Header />
-
       {/* Hero principal */}
       <Box
         sx={{
@@ -111,8 +106,8 @@ const Home = () => {
         </MainButton>
       </Box>
 
-      {/* Footer promo */}
-      <Footer />
+      <Box sx={{ height: 40 }} />
+
     </Box>
   );
 };

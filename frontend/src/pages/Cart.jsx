@@ -76,9 +76,6 @@ const Cart = () => {
 
   return (
     <Box sx={{ fontFamily: "'Helvetica Neue', sans-serif" }}>
-      {/* Header reutilizable */}
-      <Header />
-
       <Box
         sx={{
           px: isMobile ? 2 : 4,
@@ -319,8 +316,6 @@ const Cart = () => {
         </Alert>
       </Snackbar>
 
-      {/* Footer reutilizable */}
-      <Footer />
     </Box>
   );
 };

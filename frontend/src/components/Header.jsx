@@ -7,15 +7,16 @@ import HomeIcon from "@mui/icons-material/Home";
 import LoginIcon from "@mui/icons-material/Login";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { Link, useNavigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext"; // Importa el contexto
+import { AuthContext } from "../context/AuthContext"; 
 
 const Header = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
-  const { user, logout } = useContext(AuthContext); // Usa el contexto
+  const { user, logout } = useContext(AuthContext); 
 
   return (
     <Box
+      component="header"
       sx={{
         display: "flex",
         justifyContent: "space-between",
@@ -25,9 +26,10 @@ const Header = () => {
         borderBottom: "1px solid #e0e0e0",
         position: "sticky",
         top: 0,
+        left: 0,
         bgcolor: "white",
         zIndex: 1000,
-        width: "100%",
+        width: "100vw", // <--- clave para ignorar padding/margen de contenedor
       }}
     >
       <IconButton
@@ -38,17 +40,20 @@ const Header = () => {
       >
         <HomeIcon />
       </IconButton>
+
       <Typography
         variant="h4"
         sx={{ letterSpacing: "4px", fontWeight: 400 }}
       >
         E-COMMERCE
       </Typography>
+
       <Stack direction="row" spacing={2}>
         <Button
+          component={Link}
+          to="/catalogo"
           sx={{
             display: "flex",
-            flexDirection: "row",
             alignItems: "center",
             gap: 0.5,
             padding: 0,
@@ -62,12 +67,12 @@ const Header = () => {
           <SearchIcon fontSize="small" />
           <Typography variant="caption">BUSCAR</Typography>
         </Button>
+
         <Button
           component={Link}
           to="/mi-perfil"
           sx={{
             display: "flex",
-            flexDirection: "row",
             alignItems: "center",
             gap: 0.5,
             padding: 0,
@@ -83,12 +88,12 @@ const Header = () => {
             {user ? user.nombre : "CUENTA"}
           </Typography>
         </Button>
+
         <Button
           component={Link}
           to="/carrito"
           sx={{
             display: "flex",
-            flexDirection: "row",
             alignItems: "center",
             gap: 0.5,
             padding: 0,
@@ -102,11 +107,15 @@ const Header = () => {
           <ShoppingBagIcon fontSize="small" />
           <Typography variant="caption">CARRITO</Typography>
         </Button>
+
         {user ? (
           <Button
+            onClick={() => {
+              logout();
+              navigate("/home");
+            }}
             sx={{
               display: "flex",
-              flexDirection: "row",
               alignItems: "center",
               gap: 0.5,
               padding: 0,
@@ -115,10 +124,6 @@ const Header = () => {
               "&:hover": {
                 backgroundColor: "rgba(0,0,0,0.04)",
               }
-            }}
-            onClick={() => {
-              logout();
-              navigate("/home");
             }}
           >
             <LogoutIcon fontSize="small" />
@@ -130,7 +135,6 @@ const Header = () => {
             to="/usuarios"
             sx={{
               display: "flex",
-              flexDirection: "row",
               alignItems: "center",
               gap: 0.5,
               padding: 0,

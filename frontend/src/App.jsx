@@ -1,6 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { Container } from "@mui/material";
+import { Container, CssBaseline } from "@mui/material";
 import Home from "./pages/Home";
 import UserManagement from "./pages/UserManagement";
 import ProductCatalog from "./pages/ProductCatalog";
@@ -9,24 +9,24 @@ import ProductManagement from "./pages/ProductManagement";
 import Profile from "./pages/Profile";
 import Checkout from "./pages/Checkout";
 import PreguntasFrecuentes from "./pages/PreguntasFrecuentes";
-import ProtectedRoute from "./components/ProtectedRoute"; // Importa el componente
+import ProtectedRoute from "./components/ProtectedRoute";
+import Header from "./components/Header";
+import Footer from "./components/Footer"; // si lo usás
 
 function App() {
   return (
     <Router>
-      <Container maxWidth="md">
-        <Routes>
-          {/* Redirige la raíz al catálogo */}
-          <Route path="/" element={<Navigate to="/catalogo" replace />} />
+      <CssBaseline />
+      <Header />
 
-          {/* Vistas públicas */}
+      <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
+        <Routes>
+          <Route path="/" element={<Navigate to="/catalogo" replace />} />
           <Route path="/catalogo" element={<ProductCatalog />} />
           <Route path="/usuarios" element={<UserManagement />} />
           <Route path="/home" element={<Home />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/preguntas-frecuentes" element={<PreguntasFrecuentes />} />
-
-          {/* Vistas protegidas */}
           <Route
             path="/carrito"
             element={
@@ -53,6 +53,8 @@ function App() {
           />
         </Routes>
       </Container>
+
+      <Footer />
     </Router>
   );
 }

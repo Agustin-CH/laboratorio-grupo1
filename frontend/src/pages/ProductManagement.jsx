@@ -25,8 +25,6 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
 
 const initialProducts = [
   {
@@ -194,7 +192,6 @@ const ProductManagement = () => {
 
   return (
     <Box sx={{ fontFamily: "'Helvetica Neue', sans-serif" }}>
-      <Header />
       <Box
         sx={{
           p: isMobile ? 1 : 4,
@@ -387,7 +384,6 @@ const ProductManagement = () => {
         </DialogActions>
       </Dialog>
 
-      <Footer />
     </Box>
   );
 };

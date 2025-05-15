@@ -19,7 +19,6 @@ import {
 } from "@mui/material"
 import PersonIcon from "@mui/icons-material/Person"
 import ArrowBackIcon from "@mui/icons-material/ArrowBack"
-import Header from "../components/Header"
 import { AuthContext } from "../context/AuthContext"
 import { useNavigate } from "react-router-dom"
 
@@ -387,7 +386,6 @@ const Login = () => {
 
   return (
     <Box sx={{ fontFamily: "'Helvetica Neue', sans-serif" }}>
-      <Header />
       <Box
         sx={{
           display: "flex",
