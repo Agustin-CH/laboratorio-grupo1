@@ -14,8 +14,6 @@ import {
 } from "@mui/material"
 import SaveIcon from "@mui/icons-material/Save"
 import EditIcon from "@mui/icons-material/Edit"
-import Header from "../components/Header"
-import Footer from "../components/Footer"
 import { useNavigate } from "react-router-dom"
 
 const Profile = () => {
@@ -408,9 +406,7 @@ const Profile = () => {
   )
   return (
     <Box sx={{ fontFamily: "'Helvetica Neue', sans-serif" }}>
-      <Header />
       {isEditing ? <EditForm /> : <ProfileView />}
-      <Footer />
     </Box>
   )
 }

@@ -5,7 +5,7 @@
       "name": "Auriculares Inalámbricos Gamer",
       "image": "https://images.unsplash.com/photo-1583360173899-b3124bc238d9?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       "description": "Auriculares Bluetooth 5.0 con cancelación activa de ruido y micrófono integrado.",
-      "stock": 6,
+      "stock": 10,
       "price": 79.99,
       "category": "Tecnología"
     },
@@ -66,7 +66,7 @@
     {
       "id": 8,
       "name": "Novela Gráfica: Watchmen",
-      "image": "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1576122948i/472376.jpg",
+      "image": "https://plus.unsplash.com/premium_photo-1667251760504-096946b820af?q=80&w=3087&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       "description": "Aclamada novela gráfica de Alan Moore y Dave Gibbons.",
       "stock": 12,
       "price": 25.50,
@@ -75,7 +75,7 @@
     {
       "id": 9,
       "name": "Tablet Android 10\"",
-      "image": "https://images.unsplash.com/photo-1588732685253-f0369a751496?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "image": "https://plus.unsplash.com/premium_photo-1661342522661-b91c165a083c?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       "description": "Tablet con pantalla de 10 pulgadas, 32GB de almacenamiento y sistema operativo Android.",
       "stock": 9,
       "price": 149.00,
@@ -84,7 +84,7 @@
     {
       "id": 10,
       "name": "Juego de Construcción de Bloques",
-      "image": "https://images-ext-1.discordapp.net/external/GelNd3uauZRgJH3-P_K_bbLUZlUn9h7amh64-o2ILYg/%3Fq%3D80%26w%3D3086%26auto%3Dformat%26fit%3Dcrop%26ixlib%3Drb-4.1.0%26ixid%3DM3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%253D%253D/https/plus.unsplash.com/premium_photo-1688497831384-e40b2e5615cd?format=webp&width=436&height=655",
+      "image": "https://images.unsplash.com/photo-1635536360947-886f9a65e647?q=80&w=2942&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       "description": "Set de bloques de construcción con 200 piezas de diferentes formas y colores.",
       "stock": 6,
       "price": 29.99,
@@ -93,7 +93,7 @@
     {
       "id": 11,
       "name": "Juego de Mesa: Catán",
-      "image": "https://m.media-amazon.com/images/I/819jXSWWJmL._AC_SL1500_.jpg",
+      "image": "https://images.unsplash.com/photo-1682445629126-e0a7dad4faa7?q=80&w=3087&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       "description": "Juego de mesa estratégico para 3-4 jugadores.",
       "stock": 20,
       "price": 45.00,
@@ -102,7 +102,7 @@
     {
       "id": 12,
       "name": "Pantalones Vaqueros Slim Fit",
-      "image": "https://images.unsplash.com/photo-1591092724956-aef48398173f?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "image": "https://images-ext-1.discordapp.net/external/GelNd3uauZRgJH3-P_K_bbLUZlUn9h7amh64-o2ILYg/%3Fq%3D80%26w%3D3086%26auto%3Dformat%26fit%3Dcrop%26ixlib%3Drb-4.1.0%26ixid%3DM3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%253D%253D/https/plus.unsplash.com/premium_photo-1688497831384-e40b2e5615cd?format=webp&width=436&height=655",
       "description": "Pantalones vaqueros de corte ajustado para hombre, disponibles en varios talles.",
       "stock": 10,
       "price": 69.99,

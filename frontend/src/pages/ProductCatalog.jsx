@@ -21,10 +21,9 @@ import {
   Alert,
   TextField,
   IconButton,
+  MenuItem,
 } from "@mui/material";
 import FilterListIcon from "@mui/icons-material/FilterList";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
 import axios from "axios";
 import { obtenerCarrito, agregarAlCarrito } from "../utils/CartUtils";
 
@@ -39,7 +38,6 @@ const categories = [
   "Juguetes",
 ];
 
-// Tema global con tipografía
 const theme = createTheme({
   typography: {
     fontFamily: "'Poppins', 'Helvetica Neue', sans-serif",
@@ -57,24 +55,21 @@ function ProductCatalog() {
   const [selectedCategory, setSelectedCategory] = useState("Todos");
   const isMobile = useMediaQuery("(max-width:600px)");
 
-  // Sincronizar estado de carrito al montar
   useEffect(() => {
     setCartItems(obtenerCarrito());
   }, []);
 
-  // Añadir productos al carrito respetando stock
   const handleAgregarAlCarrito = (producto, quantity) => {
     const { carritoActualizado, message } = agregarAlCarrito(
       producto,
       quantity
     );
-    setCartItems(carritoActualizado); // Actualiza el estado local del carrito
+    setCartItems(carritoActualizado);
     setSnackbarMessage(message);
     setSnackbarOpen(true);
-    setSelectedProduct(null); 
+    setSelectedProduct(null);
   };
 
-  // Cargar productos desde API
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -87,19 +82,15 @@ function ProductCatalog() {
     fetchProducts();
   }, []);
 
-  // Cerrar snackbar
   const handleSnackbarClose = () => setSnackbarOpen(false);
 
-  // Controlar apertura/cierre de drawer
   const toggleDrawer = (open) => () => setDrawerOpen(open);
 
-  // Seleccionar categoría y cerrar drawer
   const handleCategorySelect = (category) => {
     setSelectedCategory(category);
     setDrawerOpen(false);
   };
 
-  // Filtrar productos según categoría seleccionada
   const displayedProducts =
     selectedCategory === "Todos"
       ? products
@@ -107,7 +98,6 @@ function ProductCatalog() {
 
   return (
     <ThemeProvider theme={theme}>
-      {/* Contenedor de Header y filtro */}
       <Box
         sx={{
           display: "flex",
@@ -117,15 +107,11 @@ function ProductCatalog() {
           bgcolor: "background.paper",
         }}
       >
-        {/* Botón de filtro a la izquierda */}
         <IconButton onClick={toggleDrawer(true)}>
           <FilterListIcon />
         </IconButton>
-        {/* Header con íconos (incluye el ícono de casita) */}
-        <Header />
       </Box>
 
-      {/* Drawer de categorías */}
       <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
         <Box width={250} role="presentation" onKeyDown={toggleDrawer(false)}>
           <Typography variant="h6" sx={{ p: 2 }}>
@@ -146,7 +132,6 @@ function ProductCatalog() {
         </Box>
       </Drawer>
 
-      {/* Catálogo de productos */}
       <Box px={isMobile ? 2 : 4} py={2}>
         <Typography
           variant="h5"
@@ -164,8 +149,8 @@ function ProductCatalog() {
                 const inCart =
                   cartItems.find((item) => item.id === product.id)?.quantity ||
                   0;
-                const available = product.stock - inCart;
-                return (
+                  const available = Math.max(0, product.stock - inCart);
+                  return (
                   <Grid item xs={12} sm={6} md={4} key={product.id}>
                     <Card
                       sx={{ cursor: "pointer", borderRadius: 1, boxShadow: 2 }}
@@ -185,6 +170,16 @@ function ProductCatalog() {
                           backgroundColor: "#f5f5f5",
                         }}
                       />
+                      {/* Mostrar mensaje de sin stock debajo de la imagen */}
+                      {available <= 0 && (
+                        <Typography
+                          variant="subtitle2"
+                          color="error"
+                          sx={{ textAlign: "center", mt: 1, fontWeight: "bold" }}
+                        >
+                          Sin stock
+                        </Typography>
+                      )}
                       <CardContent sx={{ textAlign: "center" }}>
                         <Typography variant="h6" gutterBottom>
                           {product.name}
@@ -211,7 +206,6 @@ function ProductCatalog() {
         </Grid>
       </Box>
 
-      {/* Modal de detalle del producto */}
       <Dialog
         open={Boolean(selectedProduct)}
         onClose={() => setSelectedProduct(null)}
@@ -239,6 +233,15 @@ function ProductCatalog() {
                       mb: 2,
                     }}
                   />
+                  {available <= 0 && (
+                    <Typography
+                      variant="subtitle2"
+                      color="error"
+                      sx={{ textAlign: "center", mb: 2, fontWeight: "bold" }}
+                    >
+                      Sin stock
+                    </Typography>
+                  )}
                   <Typography>{selectedProduct.description}</Typography>
                   <Typography variant="body1" sx={{ mt: 1 }}>
                     Precio: ${selectedProduct.price.toFixed(2)}
@@ -280,7 +283,6 @@ function ProductCatalog() {
           })()}
       </Dialog>
 
-      {/* Snackbar de notificaciones */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={3000}
@@ -296,7 +298,6 @@ function ProductCatalog() {
         </Alert>
       </Snackbar>
 
-      <Footer />
     </ThemeProvider>
   );
 }

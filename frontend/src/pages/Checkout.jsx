@@ -23,8 +23,6 @@ import {
   DialogContent,
   DialogActions,
 } from "@mui/material";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
 import { useNavigate } from "react-router-dom";
 import {
   calcularEnvio,
@@ -209,8 +207,6 @@ const Checkout = () => {
 
   return (
     <Box sx={{ fontFamily: "'Helvetica Neue', sans-serif" }}>
-      <Header />
-
       <Box sx={{ py: 4, px: { xs: 2, md: 4 }, maxWidth: 960, mx: "auto" }}>
         <Typography variant="h4" gutterBottom sx={{ fontWeight: 500 }}>
           Finalizar Compra
@@ -596,7 +592,7 @@ const Checkout = () => {
           </Paper>
         )}
       </Box>
-      <Footer />
+  
 
       {/* Modal de Agradecimiento */}
       <Dialog open={showThankYouModal} onClose={handleCloseThankYouModal}>

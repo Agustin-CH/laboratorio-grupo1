@@ -1,8 +1,6 @@
 import React from "react";
 import { Box, Typography, Accordion, AccordionSummary, AccordionDetails, Container } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import Header from "../components/Header";
-import FooterFull from "../components/Footer";
 
 const preguntas = [
   {
@@ -25,7 +23,6 @@ const preguntas = [
 
 const PreguntasFrecuentes = () => (
   <Box sx={{ fontFamily: "'Helvetica Neue', sans-serif" }}>
-    <Header />
     <Container maxWidth="md" sx={{ py: 6 }}>
       <Typography variant="h4" sx={{ fontWeight: 700, mb: 3, textAlign: "center" }}>
         Preguntas Frecuentes
@@ -41,7 +38,6 @@ const PreguntasFrecuentes = () => (
         </Accordion>
       ))}
     </Container>
-    <FooterFull />
   </Box>
 );
 
