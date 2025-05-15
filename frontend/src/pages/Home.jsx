@@ -106,7 +106,7 @@ const Home = () => {
         </MainButton>
       </Box>
 
-      <Box sx={{ height: 40 }} />
+      <Box sx={{ height: 150 }} />
 
     </Box>
   );
