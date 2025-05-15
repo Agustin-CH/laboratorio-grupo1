@@ -2,7 +2,7 @@
   "products": [
     {
       "id": 1,
-      "name": "Auriculares Inalámbricos",
+      "name": "Auriculares Inalámbricos Gamer",
       "image": "https://images.unsplash.com/photo-1583360173899-b3124bc238d9?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       "description": "Auriculares Bluetooth 5.0 con cancelación activa de ruido y micrófono integrado.",
       "stock": 6,
@@ -84,9 +84,9 @@
     {
       "id": 10,
       "name": "Juego de Construcción de Bloques",
-      "image": "https://images.unsplash.com/photo-1591297553584-1c78c74455b8?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "image": "https://images-ext-1.discordapp.net/external/GelNd3uauZRgJH3-P_K_bbLUZlUn9h7amh64-o2ILYg/%3Fq%3D80%26w%3D3086%26auto%3Dformat%26fit%3Dcrop%26ixlib%3Drb-4.1.0%26ixid%3DM3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%253D%253D/https/plus.unsplash.com/premium_photo-1688497831384-e40b2e5615cd?format=webp&width=436&height=655",
       "description": "Set de bloques de construcción con 200 piezas de diferentes formas y colores.",
-      "stock": 8,
+      "stock": 6,
       "price": 29.99,
       "category": "Juguetes"
     },
