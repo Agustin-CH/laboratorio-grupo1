@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -18,28 +18,37 @@ import {
   FormControlLabel,
   Radio,
   FormHelperText,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
-import Header from "../components/Header"; // Asegúrate de la ruta correcta
-import Footer from "../components/Footer"; // Asegúrate de la ruta correcta
+import Header from "../components/Header";
+import Footer from "../components/Footer";
+import { useNavigate } from "react-router-dom";
+import {
+  calcularEnvio,
+  calcularSubtotal,
+  calcularTotal,
+  obtenerCarrito,
+  vaciarCarrito,
+} from "../utils/CartUtils";
+
 
 const steps = ["Información de Envío", "Información de Pago", "Revisar Pedido"];
 
 const Checkout = () => {
   const [activeStep, setActiveStep] = useState(0);
-  const [shippingData, setShippingData] = useState({
-    /* ... */
-  });
-  const [shippingErrors, setShippingErrors] = useState({
-    /* ... */
-  });
+  const [shippingData, setShippingData] = useState({});
+  const [shippingErrors, setShippingErrors] = useState({});
   const [paymentMethod, setPaymentMethod] = useState("credit-card");
-  const [paymentData, setPaymentData] = useState({
-    /* ... */
-  });
-  const [paymentErrors, setPaymentErrors] = useState({
-    /* ... */
-  });
+  const [paymentData, setPaymentData] = useState({});
+  const [paymentErrors, setPaymentErrors] = useState({});
   const [paypalPaymentInProgress, setPaypalPaymentInProgress] = useState(false);
+  const [showThankYouModal, setShowThankYouModal] = useState(false);
+  const [cartItems, setCartItems] = useState(obtenerCarrito());
+
+  const navigate = useNavigate();
 
   const handleBack = () => {
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
@@ -144,7 +153,6 @@ const Checkout = () => {
         isValid = false;
       }
     }
-    // Puedes agregar validaciones para otros métodos de pago aquí
 
     setPaymentErrors(newErrors);
     return isValid;
@@ -173,14 +181,16 @@ const Checkout = () => {
       } else {
         setActiveStep((prevActiveStep) => prevActiveStep + 1);
       }
-    } else {
+    } else if (activeStep === 2) {
       console.log(
         "Pedido finalizado",
         shippingData,
         paymentData,
-        obtenerCarrito()
+        cartItems
       );
-      alert("Gracias por su compra!");
+      setShowThankYouModal(true);
+      vaciarCarrito();
+      setCartItems([]);
     }
   };
 
@@ -188,26 +198,14 @@ const Checkout = () => {
     setPaymentMethod(event.target.value);
   };
 
-  const obtenerCarrito = () => {
-    const carritoGuardado = localStorage.getItem("carrito");
-    return carritoGuardado ? JSON.parse(carritoGuardado) : [];
+  const handleCloseThankYouModal = () => {
+    setShowThankYouModal(false); // Cierra el modal
+    navigate("/"); // Redirige al home
   };
 
-  const calcularSubtotal = () => {
-    return obtenerCarrito().reduce(
-      (acc, item) => acc + item.price * item.quantity,
-      0
-    );
-  };
-
-  const calcularEnvio = () => {
-    const subtotal = calcularSubtotal();
-    return subtotal > 100 ? 0 : 10; // Ejemplo: envío gratis si el subtotal es mayor a $100
-  };
-
-  const calcularTotal = () => {
-    return calcularSubtotal() + calcularEnvio();
-  };
+  const subtotal = calcularSubtotal(cartItems);
+  const shippingCost = calcularEnvio(subtotal);
+  const total = calcularTotal(subtotal, shippingCost);
 
   return (
     <Box sx={{ fontFamily: "'Helvetica Neue', sans-serif" }}>
@@ -305,7 +303,6 @@ const Checkout = () => {
                   >
                     <MenuItem value="">Seleccionar país</MenuItem>
                     <MenuItem value="ar">Argentina</MenuItem>
-                    {/* Agrega más países */}
                   </Select>
                   {shippingErrors.pais && (
                     <FormHelperText>{shippingErrors.pais}</FormHelperText>
@@ -358,7 +355,7 @@ const Checkout = () => {
                   control={<Radio />}
                   label="PayPal"
                 />
-                {/* Agrega más métodos de pago */}
+                {}
               </RadioGroup>
             </FormControl>
 
@@ -436,7 +433,7 @@ const Checkout = () => {
                 {/* Botón de PayPal simulado */}
                 <Button
                   variant="contained"
-                  color="warning" // Puedes usar un color distintivo para PayPal
+                  color="warning"
                   onClick={() => {
                     setPaypalPaymentInProgress(true);
                     console.log("Botón de PayPal simulado clickeado");
@@ -536,9 +533,9 @@ const Checkout = () => {
             <Typography variant="h6" sx={{ mt: 2, fontWeight: 500 }}>
               Resumen del Pedido:
             </Typography>
-            {/* Aquí vamos a mostrar los productos del carrito */}
-            {obtenerCarrito().length > 0 ? (
-              obtenerCarrito().map((item) => (
+            {/* Mostrar los productos del carrito */}
+            {cartItems.length > 0 ? (
+              cartItems.map((item) => (
                 <Box
                   key={item.id}
                   sx={{
@@ -567,7 +564,7 @@ const Checkout = () => {
                 Subtotal:
               </Typography>
               <Typography variant="subtitle1">
-                ${calcularSubtotal().toFixed(2)}
+                ${subtotal.toFixed(2)}
               </Typography>
             </Box>
             <Box sx={{ display: "flex", justifyContent: "space-between" }}>
@@ -575,7 +572,7 @@ const Checkout = () => {
                 Envío:
               </Typography>
               <Typography variant="subtitle1">
-                ${calcularEnvio().toFixed(2)}
+                ${shippingCost.toFixed(2)}
               </Typography>
             </Box>
             <Divider sx={{ my: 1 }} />
@@ -584,7 +581,7 @@ const Checkout = () => {
                 Total:
               </Typography>
               <Typography variant="h6">
-                ${calcularTotal().toFixed(2)}
+                ${total.toFixed(2)}
               </Typography>
             </Box>
 
@@ -592,18 +589,7 @@ const Checkout = () => {
               sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}
             >
               <Button onClick={handleBack}>Atrás</Button>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() =>
-                  console.log(
-                    "Pedido Confirmado",
-                    shippingData,
-                    paymentData,
-                    obtenerCarrito()
-                  )
-                }
-              >
+              <Button variant="contained" color="primary" onClick={handleNext}>
                 Confirmar Pedido
               </Button>
             </Box>
@@ -611,6 +597,24 @@ const Checkout = () => {
         )}
       </Box>
       <Footer />
+
+      {/* Modal de Agradecimiento */}
+      <Dialog open={showThankYouModal} onClose={handleCloseThankYouModal}>
+        <DialogTitle>¡Gracias por tu compra!</DialogTitle>
+        <DialogContent>
+          <Typography variant="body1">
+            Tu pedido ha sido confirmado exitosamente.
+          </Typography>
+          <Typography variant="body2" sx={{ mt: 1 }}>
+            Recibirás un correo electrónico con los detalles de tu pedido.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseThankYouModal} color="primary" autoFocus>
+            Aceptar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

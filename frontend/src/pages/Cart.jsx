@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -9,6 +9,8 @@ import {
   IconButton,
   Divider,
   Paper,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
@@ -16,78 +18,67 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { Link, useNavigate } from "react-router-dom";
+import {
+  obtenerCarrito,
+  handleIncrement,
+  handleDecrement,
+  handleRemove,
+  calcularSubtotal,
+  calcularEnvio,
+  calcularTotal,
+} from "../utils/CartUtils";
 
 const Cart = () => {
   const isMobile = useMediaQuery("(max-width:600px)");
-  const [cartItems, setCartItems] = React.useState([]);
+  const [cartItems, setCartItems] = useState([]);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+
   const navigate = useNavigate();
 
-  const obtenerCarrito = () => {
-    const carritoGuardado = localStorage.getItem("carrito");
-    if (carritoGuardado) {
-      return JSON.parse(carritoGuardado);
-    } else {
-      return [];
-    }
-  };
-
-  const guardarCarrito = (carrito) => {
-    localStorage.setItem("carrito", JSON.stringify(carrito));
-  };
-
   useEffect(() => {
-    const carritoInicial = obtenerCarrito();
-    setCartItems(carritoInicial);
+    setCartItems(obtenerCarrito());
   }, []);
 
-  useEffect(() => {
-    guardarCarrito(cartItems);
-  }, [cartItems]);
-
-  const subtotal = cartItems.reduce(
-    (acc, item) => acc + item.quantity * item.price,
-    0
-  );
-  const shippingCost = subtotal > 100 ? 0 : 10;
-  const total = subtotal + shippingCost;
-
-  const handleIncrement = (id) => {
-    setCartItems((prevItems) =>
-      prevItems.map((item) =>
-        item.id === id && item.quantity < item.stock
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      )
-    );
-  };
-  const handleDecrement = (id) => {
-    setCartItems((prevItems) =>
-      prevItems.map((item) =>
-        item.id === id && item.quantity > 1
-          ? { ...item, quantity: item.quantity - 1 }
-          : item
-      )
-    );
+  const handleIncrementItem = (id) => {
+    const updatedCart = handleIncrement(id); // Llama a la utilidad
+    setCartItems(updatedCart); // Actualiza el estado local
   };
 
-  const handleRemove = (id) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
+  const handleDecrementItem = (id) => {
+    const updatedCart = handleDecrement(id); // Llama a la utilidad
+    setCartItems(updatedCart); // Actualiza el estado local
   };
 
-  const handleFinalizarCompra = () => {
-    if (cartItems.length > 0) {
-      navigate("/checkout");
-    } else {
-      alert("El carrito esta vacío");
+  const handleRemoveItem = (id) => {
+    const updatedCart = handleRemove(id); // Llama a la utilidad
+    setCartItems(updatedCart); // Actualiza el estado local
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
+
+  const handleCheckout = () => {
+    if (cartItems.length === 0) {
+      setSnackbarMessage(
+        "Tu carrito está vacío. Agrega productos para continuar."
+      );
+      setSnackbarOpen(true);
+      return;
     }
+    navigate("/checkout");
   };
+
+  const subtotal = calcularSubtotal(cartItems);
+  const envio = calcularEnvio(subtotal);
+  const total = calcularTotal(subtotal, envio);
 
   return (
     <Box sx={{ fontFamily: "'Helvetica Neue', sans-serif" }}>
       {/* Header reutilizable */}
       <Header />
 
-      {/* Contenido principal */}
       <Box
         sx={{
           px: isMobile ? 2 : 4,
@@ -164,7 +155,7 @@ const Cart = () => {
                         borderRadius: 0,
                         p: 0.5,
                       }}
-                      onClick={() => handleDecrement(item.id)}
+                      onClick={() => handleDecrementItem(item.id)}
                       disabled={item.quantity <= 1}
                     >
                       <RemoveIcon fontSize="small" />
@@ -182,7 +173,7 @@ const Cart = () => {
                         borderRadius: 0,
                         p: 0.5,
                       }}
-                      onClick={() => handleIncrement(item.id)}
+                      onClick={() => handleIncrementItem(item.id)}
                       disabled={item.quantity >= item.stock}
                     >
                       <AddIcon fontSize="small" />
@@ -203,7 +194,7 @@ const Cart = () => {
                   </Typography>
                   <IconButton
                     size="small"
-                    onClick={() => handleRemove(item.id)}
+                    onClick={() => handleRemoveItem(item.id)}
                     sx={{ color: "#999" }}
                   >
                     <DeleteIcon fontSize="small" />
@@ -256,7 +247,7 @@ const Cart = () => {
               >
                 <Typography variant="body2">Envío:</Typography>
                 <Typography variant="body2">
-                  ${shippingCost.toFixed(2)}
+                  ${envio.toFixed(2)}
                 </Typography>
               </Box>
               <Divider sx={{ my: 1.5 }} />
@@ -276,7 +267,7 @@ const Cart = () => {
             </Box>
 
             <Button
-              onClick={handleFinalizarCompra}
+              onClick={handleCheckout}
               variant="contained"
               fullWidth
               sx={{
@@ -311,6 +302,22 @@ const Cart = () => {
           </Button>
         </Box>
       </Box>
+
+      {/* Snackbar para notificaciones */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity="info"
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
 
       {/* Footer reutilizable */}
       <Footer />
