@@ -1,7 +1,8 @@
 package com.equipo1.ecommerce.backend.controller;
 
+
 import com.equipo1.ecommerce.backend.model.Product;
-import com.equipo1.ecommerce.backend.repository.ProductRepository;
+import com.equipo1.ecommerce.backend.service.ProductService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,79 +13,79 @@ import java.util.List;
 @RequestMapping("/api/products")
 public class ProductController {
 
-    private final ProductRepository productRepo;
+    private final ProductService productService;
 
-    public ProductController(ProductRepository productRepo) {
-        this.productRepo = productRepo;
+    // Inyectamos el Service, no el Repository directamente
+    public ProductController(ProductService productService) {
+        this.productService = productService;
     }
 
     /**
      * GET /api/products
-     * → Devuelve todos los productos.
      */
     @GetMapping
     public ResponseEntity<List<Product>> getAll() {
-        List<Product> productos = productRepo.findAll();
+        List<Product> productos = productService.listAll();
         return ResponseEntity.ok(productos);
     }
 
     /**
      * GET /api/products/{id}
-     * → Devuelve un producto por su ID.
      */
     @GetMapping("/{id}")
     public ResponseEntity<Product> getById(@PathVariable Long id) {
-        return productRepo.findById(id)
-                .map(producto -> ResponseEntity.ok(producto))
+        return productService.getById(id)
+                .map(prod -> ResponseEntity.ok(prod))
                 .orElse(ResponseEntity.notFound().build());
     }
 
     /**
      * POST /api/products
-     * Body: JSON con los campos de Product (name, description, price, stock).
-     * → Crea un producto nuevo.
      */
     @PostMapping
     public ResponseEntity<Product> create(@RequestBody Product newProduct) {
-        Product saved = productRepo.save(newProduct);
-        return ResponseEntity
-                .created(URI.create("/api/products/" + saved.getId()))
-                .body(saved);
+        try {
+            Product saved = productService.create(newProduct);
+            return ResponseEntity
+                    .created(URI.create("/api/products/" + saved.getId()))
+                    .body(saved);
+        } catch (IllegalArgumentException ex) {
+            // Por ejemplo, precio negativo
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     /**
      * PUT /api/products/{id}
-     * Body: JSON con los campos a actualizar.
-     * → Actualiza un producto existente.
      */
     @PutMapping("/{id}")
     public ResponseEntity<Product> update(
             @PathVariable Long id,
             @RequestBody Product updatedProduct) {
 
-        return productRepo.findById(id)
-                .map(existing -> {
-                    existing.setName(updatedProduct.getName());
-                    existing.setDescription(updatedProduct.getDescription());
-                    existing.setPrice(updatedProduct.getPrice());
-                    existing.setStock(updatedProduct.getStock());
-                    Product saved = productRepo.save(existing);
-                    return ResponseEntity.ok(saved);
-                })
+        return productService.update(id, updatedProduct)
+                .map(prod -> ResponseEntity.ok(prod))
                 .orElse(ResponseEntity.notFound().build());
     }
 
     /**
      * DELETE /api/products/{id}
-     * → Elimina un producto por ID.
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        return productRepo.findById(id)
-                .map(existing -> {
-                    productRepo.deleteById(id);
-                    return ResponseEntity.noContent().<Void>build();
-                })
-                .orElse(ResponseEntity.notFound().build());
+        boolean deleted = productService.delete(id);
+        if (deleted) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
+
+
+    @GetMapping("/search")
+    public ResponseEntity<List<Product>> searchByName(@RequestParam("term") String term) {
+        List<Product> results = productService.searchByName(term);
+        return ResponseEntity.ok(results);
+    }
+
 }
