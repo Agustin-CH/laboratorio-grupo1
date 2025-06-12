@@ -20,7 +20,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserDTO> getAll() {
         return userRepository.findAll().stream()
-                .map(this::toDTO)
+                .map(UserDTO::new)           // invoca el constructor UserDTO(User)
                 .collect(Collectors.toList());
     }
 
@@ -28,7 +28,7 @@ public class UserServiceImpl implements UserService {
     public UserDTO getById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        return toDTO(user);
+        return new UserDTO(user);
     }
 
     @Override
@@ -41,21 +41,13 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Set<Role> roles = roleStrings.stream()
+        Set<User.Role> roles = roleStrings.stream()
                 .map(String::toUpperCase)
-                .map(Role::valueOf)
+                .map(User.Role::valueOf)
                 .collect(Collectors.toSet());
 
         user.setRoles(roles);
-        return toDTO(userRepository.save(user));
-    }
-
-    private UserDTO toDTO(User user) {
-        UserDTO dto = new UserDTO();
-        dto.setId(user.getId());
-        dto.setEmail(user.getEmail());
-        dto.setFullName(user.getFullName());
-        dto.setRoles(user.getRoles());
-        return dto;
+        User saved = userRepository.save(user);
+        return new UserDTO(saved);
     }
 }
