@@ -50,28 +50,34 @@ public class OrderServiceImpl implements OrderService {
         order.setCreatedAt(LocalDateTime.now());
         order.setStatus(Order.Status.PENDING);
 
-        List<OrderItem> orderItems = cart.getItems().stream().map(cartItem -> {
-            OrderItem orderItem = new OrderItem();
-            orderItem.setOrder(order);
-            orderItem.setProduct(cartItem.getProduct());
-            orderItem.setQuantity(cartItem.getQuantity());
-            return orderItem;
-        }).collect(Collectors.toList());
-
+        List<OrderItem> orderItems = cart.getItems().stream()
+                .map(cartItem -> {
+                    OrderItem orderItem = new OrderItem();
+                    orderItem.setOrder(order);
+                    orderItem.setProduct(cartItem.getProduct());
+                    orderItem.setQuantity(cartItem.getQuantity());
+                    return orderItem;
+                })
+                .collect(Collectors.toList());
         order.setItems(orderItems);
 
-        double total = orderItems.stream()
-                .mapToDouble(item -> item.getProduct().getPrice() * item.getQuantity())
-                .sum();
-        order.setTotalAmount(total);
+        BigDecimal totalAmount = orderItems.stream()
+                .map(item ->
+                        item.getProduct()
+                                .getPrice()
+                                .multiply(BigDecimal.valueOf(item.getQuantity()))
+                )
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        order.setTotalAmount(totalAmount.doubleValue());
 
         Order savedOrder = orderRepository.save(order);
 
-        // Limpiar carrito
+        // limpiar carrito
         cartItemRepository.deleteAll(cart.getItems());
 
         return convertToDTO(savedOrder);
-    }
+    }
 
     @Override
     public OrderDTO getOrderById(Long orderId) {
