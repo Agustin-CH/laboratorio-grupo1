@@ -1,42 +1,47 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 
 const ProtectedRoute = ({ children, requiredRole }) => {
-  const { user } = useContext(AuthContext);
-  const [redirect, setRedirect] = useState(null);
-  const [open, setOpen] = useState(false);
-  const [alertMsg, setAlertMsg] = useState("");
+  const { user, ready } = useContext(AuthContext);
+  const [open, setOpen] = React.useState(false);
+  const [msg, setMsg]   = React.useState("");
 
   useEffect(() => {
+    if (!ready) return;
     if (!user) {
-      setAlertMsg("Debes iniciar sesión para acceder a esta página.");
+      setMsg("Debes iniciar sesión");
       setOpen(true);
-      setTimeout(() => setRedirect("/usuarios"), 1500);
-    } else if (requiredRole && user.rol !== requiredRole) {
-      setAlertMsg("No tienes permisos para acceder a esta sección.");
+      setTimeout(() => setOpen(false), 1500);
+    } else if (
+      requiredRole &&
+      !user.roles.map(r => r.toUpperCase()).includes(requiredRole.toUpperCase())
+    ) {
+      setMsg("No tienes permisos");
       setOpen(true);
-      setTimeout(() => setRedirect("/home"), 1500);
+      setTimeout(() => setOpen(false), 1500);
     }
-  }, [user, requiredRole]);
+  }, [user, ready, requiredRole]);
 
-  // Si está redirigiendo, navega
-  if (redirect) return <Navigate to={redirect} replace />;
-
-  // Si no está autorizado, NO renderiza children
-  if (!user || (requiredRole && user.rol !== requiredRole)) {
-    return (
-      <Snackbar open={open} autoHideDuration={1400} onClose={() => setOpen(false)}>
-        <MuiAlert severity="warning" elevation={6} variant="filled" onClose={() => setOpen(false)}>
-          {alertMsg}
-        </MuiAlert>
-      </Snackbar>
-    );
+  if (!ready) return <div>Cargando…</div>;
+  if (!user) return <Navigate to="/login" replace />;
+  if (
+    requiredRole &&
+    !user.roles.map(r => r.toUpperCase()).includes(requiredRole.toUpperCase())
+  ) {
+    return <Navigate to="/" replace />;
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      <Snackbar open={open} autoHideDuration={1400} onClose={() => setOpen(false)}>
+        <MuiAlert severity="warning">{msg}</MuiAlert>
+      </Snackbar>
+    </>
+  );
 };
 
 export default ProtectedRoute;
