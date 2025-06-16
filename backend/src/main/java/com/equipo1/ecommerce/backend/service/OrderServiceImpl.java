@@ -16,16 +16,14 @@ import java.math.BigDecimal;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
-    private final OrderItemRepository orderItemRepository;
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final UserRepository userRepository;
 
-    public OrderServiceImpl(OrderRepository orderRepository, OrderItemRepository orderItemRepository,
+    public OrderServiceImpl(OrderRepository orderRepository,
                             CartRepository cartRepository, CartItemRepository cartItemRepository,
                             UserRepository userRepository) {
         this.orderRepository = orderRepository;
-        this.orderItemRepository = orderItemRepository;
         this.cartRepository = cartRepository;
         this.cartItemRepository = cartItemRepository;
         this.userRepository = userRepository;
@@ -77,7 +75,7 @@ public class OrderServiceImpl implements OrderService {
         cartItemRepository.deleteAll(cart.getItems());
 
         return convertToDTO(savedOrder);
-    }
+    }
 
     @Override
     public OrderDTO getOrderById(Long orderId) {

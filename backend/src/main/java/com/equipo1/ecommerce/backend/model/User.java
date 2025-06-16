@@ -1,8 +1,10 @@
+// src/main/java/com/equipo1/ecommerce/backend/model/User.java
 package com.equipo1.ecommerce.backend.model;
 
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
@@ -25,6 +27,15 @@ public class User {
 
     private String fullName;
 
+    private String nationality;
+
+    private String address;
+
+    private LocalDate birthDate;
+
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
+
     @Enumerated(EnumType.STRING)
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
@@ -39,10 +50,14 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<Order> orders;
 
-
     public enum Role {
         USER,
         ADMIN
     }
-}
 
+    public enum Gender {
+        MALE,
+        FEMALE,
+        OTHER
+    }
+}
