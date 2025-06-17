@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import {
   Box,
   Typography,
@@ -22,597 +22,429 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import {
-  calcularEnvio,
-  calcularSubtotal,
-  calcularTotal,
-  obtenerCarrito,
-  vaciarCarrito,
-} from "../utils/CartUtils";
-
+import axios from "axios";
+import { AuthContext } from "../context/AuthContext";
 
 const steps = ["Información de Envío", "Información de Pago", "Revisar Pedido"];
 
-const Checkout = () => {
+export default function Checkout() {
+  const { user, token } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const headers = { Authorization: `Bearer ${token}` };
+
   const [activeStep, setActiveStep] = useState(0);
   const [shippingData, setShippingData] = useState({});
   const [shippingErrors, setShippingErrors] = useState({});
   const [paymentMethod, setPaymentMethod] = useState("credit-card");
   const [paymentData, setPaymentData] = useState({});
   const [paymentErrors, setPaymentErrors] = useState({});
-  const [paypalPaymentInProgress, setPaypalPaymentInProgress] = useState(false);
-  const [showThankYouModal, setShowThankYouModal] = useState(false);
-  const [cartItems, setCartItems] = useState(obtenerCarrito());
+  const [paypalInProgress, setPaypalInProgress] = useState(false);
+  const [showThankYou, setShowThankYou] = useState(false);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "info",
+  });
+  const [cartItems, setCartItems] = useState([]);
 
-  const navigate = useNavigate();
-
-  const handleBack = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep - 1);
-  };
-
-  const handleChange = (event) => {
-    const { name, value, type, checked } = event.target;
-    if (activeStep === 0) {
-      setShippingData({ ...shippingData, [name]: value });
-      setShippingErrors({ ...shippingErrors, [name]: "" });
-    } else if (activeStep === 1) {
-      if (type === "checkbox") {
-        setPaymentData({ ...paymentData, [name]: checked });
-      } else {
-        setPaymentData({ ...paymentData, [name]: value });
-      }
-      setPaymentErrors({ ...paymentErrors, [name]: "" });
-    }
-  };
-
-  const validateShipping = () => {
-    let isValid = true;
-    const newErrors = { ...shippingErrors };
-    const nameRegex = /^[a-zA-Z\s]*$/;
-
-    if (!shippingData.nombre.trim()) {
-      newErrors.nombre = "El nombre es requerido";
-      isValid = false;
-    } else if (!nameRegex.test(shippingData.nombre)) {
-      newErrors.nombre = "El nombre solo puede contener letras y espacios";
-      isValid = false;
-    }
-
-    if (!shippingData.apellido.trim()) {
-      newErrors.apellido = "El apellido es requerido";
-      isValid = false;
-    } else if (!nameRegex.test(shippingData.apellido)) {
-      newErrors.apellido = "El apellido solo puede contener letras y espacios";
-      isValid = false;
-    }
-
-    if (!shippingData.direccion.trim()) {
-      newErrors.direccion = "La dirección es requerida";
-      isValid = false;
-    }
-    if (!shippingData.ciudad.trim()) {
-      newErrors.ciudad = "La ciudad es requerida";
-      isValid = false;
-    }
-    if (!/^\d{4,}$/.test(shippingData.codigoPostal)) {
-      newErrors.codigoPostal = "El código postal no es válido";
-      isValid = false;
-    }
-    if (!shippingData.pais) {
-      newErrors.pais = "El país es requerido";
-      isValid = false;
-    }
-    if (!/^\d{7,}$/.test(shippingData.telefono)) {
-      newErrors.telefono = "El número de teléfono no es válido";
-      isValid = false;
-    }
-
-    setShippingErrors(newErrors);
-    return isValid;
-  };
-
-  const validatePayment = () => {
-    let isValid = true;
-    const newErrors = { ...paymentErrors };
-
-    if (paymentMethod === "credit-card") {
-      // Validar número de tarjeta (formato básico, podría necesitar una validación Luhn más robusta)
-      if (!/^\d{16}$/.test(paymentData.cardNumber)) {
-        newErrors.cardNumber = "El número de tarjeta debe tener 16 dígitos";
-        isValid = false;
-      }
-
-      // Validar fecha de expiración (formato MM/AA y que no esté expirada)
-      if (!/^(0[1-9]|1[0-2])\/([2-9][0-9])$/.test(paymentData.expiryDate)) {
-        newErrors.expiryDate = "Formato de fecha inválido (MM/AA)";
-        isValid = false;
-      } else {
-        const [monthStr, yearShortStr] = paymentData.expiryDate.split("/");
-        const month = parseInt(monthStr, 10);
-        const year = 2000 + parseInt(yearShortStr, 10); // Asumiendo que las tarjetas no expiran antes del 2000
-        const currentDate = new Date();
-        const currentYear = currentDate.getFullYear();
-        const currentMonth = currentDate.getMonth() + 1;
-
-        if (
-          year < currentYear ||
-          (year === currentYear && month < currentMonth)
-        ) {
-          newErrors.expiryDate = "La tarjeta ha expirado";
-          isValid = false;
-        }
-      }
-
-      // Validar CVV (3 o 4 dígitos)
-      if (!/^\d{3,4}$/.test(paymentData.cvv)) {
-        newErrors.cvv = "El CVV debe tener 3 o 4 dígitos";
-        isValid = false;
-      }
-    }
-
-    setPaymentErrors(newErrors);
-    return isValid;
-  };
-
-  const handleNext = () => {
-    if (activeStep === 0) {
-      if (validateShipping()) {
-        setActiveStep((prevActiveStep) => prevActiveStep + 1);
-      }
-    } else if (activeStep === 1) {
-      if (paymentMethod === "credit-card") {
-        if (validatePayment()) {
-          setActiveStep((prevActiveStep) => prevActiveStep + 1);
-        }
-      } else if (paymentMethod === "paypal") {
-        // Simulación del inicio del pago con PayPal
-        setPaypalPaymentInProgress(true);
-        console.log("Simulando redirección a PayPal...");
-        setTimeout(() => {
-          // Simulación de que PayPal devuelve la autorización
-          alert("Simulación: Pago con PayPal autorizado.");
-          setPaypalPaymentInProgress(false);
-          setActiveStep((prevActiveStep) => prevActiveStep + 1);
-        }, 3000);
-      } else {
-        setActiveStep((prevActiveStep) => prevActiveStep + 1);
-      }
-    } else if (activeStep === 2) {
-      console.log(
-        "Pedido finalizado",
-        shippingData,
-        paymentData,
-        cartItems
-      );
-      setShowThankYouModal(true);
-      vaciarCarrito();
-      setCartItems([]);
-    }
-  };
-
-  const handlePaymentMethodChange = (event) => {
-    setPaymentMethod(event.target.value);
-  };
-
-  const handleCloseThankYouModal = () => {
-    setShowThankYouModal(false); // Cierra el modal
-    navigate("/"); // Redirige al home
-  };
+  // Carga inicial del carrito desde localStorage
+  useEffect(() => {
+    setCartItems(obtenerCarrito());
+  }, []);
 
   const subtotal = calcularSubtotal(cartItems);
   const shippingCost = calcularEnvio(subtotal);
   const total = calcularTotal(subtotal, shippingCost);
 
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    if (activeStep === 0) {
+      setShippingData({ ...shippingData, [name]: value });
+      setShippingErrors({ ...shippingErrors, [name]: "" });
+    } else if (activeStep === 1) {
+      setPaymentData({
+        ...paymentData,
+        [name]: type === "checkbox" ? checked : value,
+      });
+      setPaymentErrors({ ...paymentErrors, [name]: "" });
+    }
+  };
+
+  const validateShipping = () => {
+    const errs = {};
+    let ok = true;
+    if (!shippingData.nombre?.trim()) {
+      errs.nombre = "Requerido";
+      ok = false;
+    }
+    if (!shippingData.apellido?.trim()) {
+      errs.apellido = "Requerido";
+      ok = false;
+    }
+    if (!shippingData.direccion?.trim()) {
+      errs.direccion = "Requerido";
+      ok = false;
+    }
+    if (!shippingData.ciudad?.trim()) {
+      errs.ciudad = "Requerido";
+      ok = false;
+    }
+    if (!/^\d{4,}$/.test(shippingData.codigoPostal)) {
+      errs.codigoPostal = "Inválido";
+      ok = false;
+    }
+    if (!shippingData.pais) {
+      errs.pais = "Requerido";
+      ok = false;
+    }
+    if (!/^\d{7,}$/.test(shippingData.telefono)) {
+      errs.telefono = "Inválido";
+      ok = false;
+    }
+    setShippingErrors(errs);
+    return ok;
+  };
+
+  const validatePayment = () => {
+    const errs = {};
+    let ok = true;
+    if (paymentMethod === "credit-card") {
+      if (!/^\d{16}$/.test(paymentData.cardNumber)) {
+        errs.cardNumber = "Debe tener 16 dígitos";
+        ok = false;
+      }
+      if (!/^(0[1-9]|1[0-2])\/([2-9][0-9])$/.test(paymentData.expiryDate)) {
+        errs.expiryDate = "Formato MM/AA inválido";
+        ok = false;
+      } else {
+        const [m, y] = paymentData.expiryDate.split("/");
+        const month = +m,
+          year = 2000 + +y;
+        const now = new Date();
+        if (
+          year < now.getFullYear() ||
+          (year === now.getFullYear() && month < now.getMonth() + 1)
+        ) {
+          errs.expiryDate = "Tarjeta expirada";
+          ok = false;
+        }
+      }
+      if (!/^\d{3,4}$/.test(paymentData.cvv)) {
+        errs.cvv = "3 o 4 dígitos";
+        ok = false;
+      }
+    }
+    setPaymentErrors(errs);
+    return ok;
+  };
+
+  const handleNext = async () => {
+    if (activeStep === 0) {
+      if (!validateShipping()) return;
+      setActiveStep(1);
+    } else if (activeStep === 1) {
+      if (paymentMethod === "credit-card") {
+        if (!validatePayment()) return;
+        setActiveStep(2);
+      } else {
+        setPaypalInProgress(true);
+        setTimeout(() => {
+          setPaypalInProgress(false);
+          setActiveStep(2);
+        }, 2000);
+      }
+    } else {
+      try {
+        // 1) Crear la orden en el back
+        await axios.post(`/api/orders/create/${user.id}`, null, { headers });
+
+        // 2) Vaciar carrito en el back
+        await axios.delete(`/api/cart/${user.id}/clear`, { headers });
+
+        // 3) Vaciar carrito en front (estado + localStorage)
+        setCartItems([]);
+        vaciarCarrito();
+
+        // 4) Mostrar modal de gracias
+        setShowThankYou(true);
+      } catch (e) {
+        setSnackbar({
+          open: true,
+          message: "Error al crear la orden",
+          severity: "error",
+        });
+      }
+    }
+  };
+
+  const handleBack = () => setActiveStep((s) => s - 1);
+  const handleCloseSnackbar = () =>
+    setSnackbar((s) => ({ ...s, open: false }));
+  const handleCloseThankYou = () => {
+    setShowThankYou(false);
+    navigate("/orders");
+  };
+
   return (
-    <Box sx={{ fontFamily: "'Helvetica Neue', sans-serif" }}>
-      <Box sx={{ py: 4, px: { xs: 2, md: 4 }, maxWidth: 960, mx: "auto" }}>
-        <Typography variant="h4" gutterBottom sx={{ fontWeight: 500 }}>
-          Finalizar Compra
-        </Typography>
+    <Box sx={{ fontFamily: "'Helvetica Neue', sans-serif", py: 4, px: { xs: 2, md: 4 } }}>
+      <Typography variant="h4" gutterBottom>
+        Finalizar Compra
+      </Typography>
 
-        <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 3 }}>
-          {steps.map((label) => (
-            <Step key={label}>
-              <StepLabel>{label}</StepLabel>
-            </Step>
-          ))}
-        </Stepper>
+      <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 3 }}>
+        {steps.map((label) => (
+          <Step key={label}>
+            <StepLabel>{label}</StepLabel>
+          </Step>
+        ))}
+      </Stepper>
 
-        {activeStep === 0 && (
-          <Paper sx={{ p: 3, mb: 3, border: "1px solid #f0f0f0" }}>
-            <Typography variant="h6" gutterBottom sx={{ fontWeight: 500 }}>
-              Información de Envío
-            </Typography>
+      {/* Paso 1: Shipping */}
+      {activeStep === 0 && (
+        <Paper sx={{ p: 3, mb: 3, border: "1px solid #eee" }}>
+          <Grid container spacing={2}>
+            {[
+              { label: "Nombre", name: "nombre", xs: 6 },
+              { label: "Apellido", name: "apellido", xs: 6 },
+              { label: "Dirección", name: "direccion", xs: 12 },
+              { label: "Ciudad", name: "ciudad", xs: 6 },
+              { label: "Código Postal", name: "codigoPostal", xs: 6 },
+            ].map(({ label, name, xs }) => (
+              <Grid item xs={12} sm={xs} key={name}>
+                <TextField
+                  fullWidth
+                  label={label}
+                  name={name}
+                  value={shippingData[name] || ""}
+                  onChange={handleChange}
+                  error={!!shippingErrors[name]}
+                  helperText={shippingErrors[name]}
+                />
+              </Grid>
+            ))}
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth error={!!shippingErrors.pais}>
+                <InputLabel>País</InputLabel>
+                <Select
+                  name="pais"
+                  value={shippingData.pais || ""}
+                  onChange={handleChange}
+                  label="País"
+                >
+                  <MenuItem value="">Seleccionar</MenuItem>
+                  <MenuItem value="ar">Argentina</MenuItem>
+                </Select>
+                <FormHelperText>{shippingErrors.pais}</FormHelperText>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Teléfono"
+                name="telefono"
+                value={shippingData.telefono || ""}
+                onChange={handleChange}
+                error={!!shippingErrors.telefono}
+                helperText={shippingErrors.telefono}
+              />
+            </Grid>
+          </Grid>
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3 }}>
+            <Button variant="contained" onClick={handleNext}>
+              Continuar a Pago
+            </Button>
+          </Box>
+        </Paper>
+      )}
+
+      {/* Paso 2: Payment */}
+      {activeStep === 1 && (
+        <Paper sx={{ p: 3, mb: 3, border: "1px solid #eee" }}>
+          <FormControl component="fieldset" sx={{ mb: 2 }}>
+            <RadioGroup
+              row
+              value={paymentMethod}
+              onChange={(e) => setPaymentMethod(e.target.value)}
+            >
+              <FormControlLabel
+                value="credit-card"
+                control={<Radio />}
+                label="Tarjeta"
+              />
+              <FormControlLabel
+                value="paypal"
+                control={<Radio />}
+                label="PayPal"
+              />
+            </RadioGroup>
+          </FormControl>
+
+          {paymentMethod === "credit-card" && (
             <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Nombre"
-                  variant="outlined"
-                  name="nombre"
-                  value={shippingData.nombre}
-                  onChange={handleChange}
-                  error={!!shippingErrors.nombre}
-                  helperText={shippingErrors.nombre}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Apellido"
-                  variant="outlined"
-                  name="apellido"
-                  value={shippingData.apellido}
-                  onChange={handleChange}
-                  error={!!shippingErrors.apellido}
-                  helperText={shippingErrors.apellido}
-                />
-              </Grid>
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  label="Dirección"
-                  variant="outlined"
-                  name="direccion"
-                  value={shippingData.direccion}
+                  label="Número de Tarjeta"
+                  name="cardNumber"
+                  value={paymentData.cardNumber || ""}
                   onChange={handleChange}
-                  error={!!shippingErrors.direccion}
-                  helperText={shippingErrors.direccion}
+                  error={!!paymentErrors.cardNumber}
+                  helperText={paymentErrors.cardNumber}
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid item xs={6}>
                 <TextField
                   fullWidth
-                  label="Ciudad"
-                  variant="outlined"
-                  name="ciudad"
-                  value={shippingData.ciudad}
+                  label="MM/AA"
+                  name="expiryDate"
+                  value={paymentData.expiryDate || ""}
                   onChange={handleChange}
-                  error={!!shippingErrors.ciudad}
-                  helperText={shippingErrors.ciudad}
+                  error={!!paymentErrors.expiryDate}
+                  helperText={paymentErrors.expiryDate}
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid item xs={6}>
                 <TextField
                   fullWidth
-                  label="Código Postal"
-                  variant="outlined"
-                  name="codigoPostal"
-                  value={shippingData.codigoPostal}
+                  label="CVV"
+                  name="cvv"
+                  value={paymentData.cvv || ""}
                   onChange={handleChange}
-                  error={!!shippingErrors.codigoPostal}
-                  helperText={shippingErrors.codigoPostal}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth error={!!shippingErrors.pais}>
-                  <InputLabel id="country-label">País</InputLabel>
-                  <Select
-                    labelId="country-label"
-                    id="pais"
-                    name="pais"
-                    value={shippingData.pais}
-                    label="País"
-                    onChange={handleChange}
-                  >
-                    <MenuItem value="">Seleccionar país</MenuItem>
-                    <MenuItem value="ar">Argentina</MenuItem>
-                  </Select>
-                  {shippingErrors.pais && (
-                    <FormHelperText>{shippingErrors.pais}</FormHelperText>
-                  )}
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Número de Teléfono"
-                  variant="outlined"
-                  name="telefono"
-                  value={shippingData.telefono}
-                  onChange={handleChange}
-                  error={!!shippingErrors.telefono}
-                  helperText={shippingErrors.telefono}
+                  error={!!paymentErrors.cvv}
+                  helperText={paymentErrors.cvv}
                 />
               </Grid>
             </Grid>
-            <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3 }}>
-              <Button variant="contained" color="primary" onClick={handleNext}>
-                Continuar a Pago
-              </Button>
-            </Box>
-          </Paper>
-        )}
+          )}
 
-        {activeStep === 1 && (
-          <Paper sx={{ p: 3, mb: 3, border: "1px solid #f0f0f0" }}>
-            <Typography variant="h6" gutterBottom sx={{ fontWeight: 500 }}>
-              Información de Pago
-            </Typography>
-            <FormControl component="fieldset" sx={{ mb: 2 }}>
-              <Typography variant="subtitle1" gutterBottom>
-                Método de Pago
-              </Typography>
-              <RadioGroup
-                aria-label="payment-method"
-                name="paymentMethod"
-                value={paymentMethod}
-                onChange={handlePaymentMethodChange}
-              >
-                <FormControlLabel
-                  value="credit-card"
-                  control={<Radio />}
-                  label="Tarjeta de Crédito"
-                />
-                <FormControlLabel
-                  value="paypal"
-                  control={<Radio />}
-                  label="PayPal"
-                />
-                {}
-              </RadioGroup>
-            </FormControl>
-
-            {paymentMethod === "credit-card" && (
-              <Box sx={{ mt: 2 }}>
-                <Typography variant="subtitle1" gutterBottom>
-                  Detalles de la Tarjeta de Crédito
-                </Typography>
-                <Grid container spacing={2}>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      label="Número de Tarjeta"
-                      variant="outlined"
-                      name="cardNumber"
-                      value={paymentData.cardNumber}
-                      onChange={handleChange}
-                      error={!!paymentErrors.cardNumber} // Conecta el error
-                      helperText={paymentErrors.cardNumber} // Muestra el mensaje de error
-                    />
-                  </Grid>
-                  <Grid item xs={6}>
-                    <TextField
-                      fullWidth
-                      label="Fecha de Expiración (MM/AA)"
-                      variant="outlined"
-                      name="expiryDate"
-                      value={paymentData.expiryDate}
-                      onChange={handleChange}
-                      error={!!paymentErrors.expiryDate} // Conecta el error
-                      helperText={paymentErrors.expiryDate} // Muestra el mensaje de error
-                    />
-                  </Grid>
-                  <Grid item xs={6}>
-                    <TextField
-                      fullWidth
-                      label="CVV"
-                      variant="outlined"
-                      name="cvv"
-                      value={paymentData.cvv}
-                      onChange={handleChange}
-                      error={!!paymentErrors.cvv} // Conecta el error
-                      helperText={paymentErrors.cvv} // Muestra el mensaje de error
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <FormControlLabel
-                      control={
-                        <Radio
-                          color="primary"
-                          name="saveCard"
-                          checked={paymentData.saveCard}
-                          onChange={handleChange}
-                        />
-                      }
-                      label="Guardar esta tarjeta para futuras compras"
-                    />
-                  </Grid>
-                </Grid>
-              </Box>
-            )}
-
-            {paymentMethod === "paypal" && (
-              <Box
-                sx={{
-                  mt: 2,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
+          {paymentMethod === "paypal" && (
+            <Box sx={{ textAlign: "center", mt: 2 }}>
+              <Button
+                variant="contained"
+                color="warning"
+                onClick={() => {
+                  setPaypalInProgress(true);
+                  setTimeout(() => {
+                    setPaypalInProgress(false);
+                    setActiveStep(2);
+                  }, 2000);
                 }}
+                disabled={paypalInProgress}
               >
-                <Typography variant="subtitle1" gutterBottom>
-                  Pagar con PayPal
-                </Typography>
-                {/* Botón de PayPal simulado */}
-                <Button
-                  variant="contained"
-                  color="warning"
-                  onClick={() => {
-                    setPaypalPaymentInProgress(true);
-                    console.log("Botón de PayPal simulado clickeado");
-                    setTimeout(() => {
-                      alert("Simulación: Redirigiendo a PayPal...");
-                      setTimeout(() => {
-                        alert("Simulación: Pago con PayPal autorizado.");
-                        setPaypalPaymentInProgress(false);
-                        setActiveStep((prevActiveStep) => prevActiveStep + 1);
-                      }, 2000); // Simula el tiempo de procesamiento de PayPal
-                    }, 1500); // Simula la redirección
-                  }}
-                  disabled={paypalPaymentInProgress}
-                  sx={{
-                    backgroundColor: "#ffc439",
-                    color: "#000",
-                    "&:hover": { backgroundColor: "#e0b330" },
-                  }}
-                >
-                  {paypalPaymentInProgress
-                    ? "Procesando PayPal..."
-                    : "Pagar con PayPal"}
-                </Button>
-                {paypalPaymentInProgress && (
-                  <Typography
-                    variant="caption"
-                    color="textSecondary"
-                    sx={{ mt: 1 }}
-                  >
-                    Simulando conexión segura con PayPal...
-                  </Typography>
-                )}
-              </Box>
-            )}
-
-            <Box
-              sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}
-            >
-              <Button onClick={handleBack}>Atrás</Button>
-              <Button variant="contained" color="primary" onClick={handleNext}>
-                Revisar Pedido
+                {paypalInProgress
+                  ? "Procesando..."
+                  : "Pagar con PayPal"}
               </Button>
             </Box>
-          </Paper>
-        )}
+          )}
 
-        {activeStep === 2 && (
-          <Paper sx={{ p: 3, mb: 3, border: "1px solid #f0f0f0" }}>
-            <Typography variant="h6" gutterBottom sx={{ fontWeight: 500 }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}>
+            <Button onClick={handleBack}>Atrás</Button>
+            <Button variant="contained" onClick={handleNext}>
               Revisar Pedido
-            </Typography>
+            </Button>
+          </Box>
+        </Paper>
+      )}
 
-            <Typography variant="h6" sx={{ mt: 2, fontWeight: 500 }}>
-              Información de Envío:
-            </Typography>
-            <Typography>
-              Nombre: {shippingData.nombre} {shippingData.apellido}
-            </Typography>
-            <Typography>Dirección: {shippingData.direccion}</Typography>
-            <Typography>
-              Ciudad: {shippingData.ciudad}, Código Postal:{" "}
-              {shippingData.codigoPostal}
-            </Typography>
-            <Typography>País: {shippingData.pais}</Typography>
-            <Typography>Teléfono: {shippingData.telefono}</Typography>
+      {/* Paso 3: Review */}
+      {activeStep === 2 && (
+        <Paper sx={{ p: 3, mb: 3, border: "1px solid #eee" }}>
+          <Typography variant="h6">Envío</Typography>
+          <Typography>
+            {shippingData.nombre} {shippingData.apellido}
+          </Typography>
+          <Typography>
+            {shippingData.direccion}, {shippingData.ciudad}
+          </Typography>
+          <Typography>
+            CP {shippingData.codigoPostal}, {shippingData.pais}
+          </Typography>
+          <Typography>Tel: {shippingData.telefono}</Typography>
 
-            <Divider sx={{ my: 2 }} />
+          <Divider sx={{ my: 2 }} />
 
-            <Typography variant="h6" sx={{ mt: 2, fontWeight: 500 }}>
-              Información de Pago:
-            </Typography>
-            <Typography>
-              Método de Pago:{" "}
-              {paymentMethod === "credit-card"
-                ? "Tarjeta de Crédito"
-                : paymentMethod === "paypal"
-                ? "PayPal"
-                : paymentMethod}
-            </Typography>
-            {paymentMethod === "credit-card" && (
-              <>
-                <Typography>
-                  Número de Tarjeta: ****-****-****-
-                  {paymentData.cardNumber.slice(-4)}
-                </Typography>
-                <Typography>
-                  Fecha de Expiración: {paymentData.expiryDate}
-                </Typography>
-              </>
-            )}
-            {paymentData.saveCard && (
-              <Typography>Guardar tarjeta: Sí</Typography>
-            )}
+          <Typography variant="h6">Pago</Typography>
+          <Typography>
+            {paymentMethod === "credit-card"
+              ? "Tarjeta ****" + paymentData.cardNumber?.slice(-4)
+              : "PayPal"}
+          </Typography>
 
-            <Divider sx={{ my: 2 }} />
+          <Divider sx={{ my: 2 }} />
 
-            <Typography variant="h6" sx={{ mt: 2, fontWeight: 500 }}>
-              Resumen del Pedido:
-            </Typography>
-            {/* Mostrar los productos del carrito */}
-            {cartItems.length > 0 ? (
-              cartItems.map((item) => (
-                <Box
-                  key={item.id}
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    py: 1,
-                  }}
-                >
-                  <Typography>
-                    {item.name} ({item.quantity})
-                  </Typography>
-                  <Typography>
-                    ${(item.price * item.quantity).toFixed(2)}
-                  </Typography>
-                </Box>
-              ))
-            ) : (
-              <Typography>No hay productos en el carrito.</Typography>
-            )}
-
-            <Divider sx={{ my: 2 }} />
-
-            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
-                Subtotal:
-              </Typography>
-              <Typography variant="subtitle1">
-                ${subtotal.toFixed(2)}
-              </Typography>
-            </Box>
-            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
-                Envío:
-              </Typography>
-              <Typography variant="subtitle1">
-                ${shippingCost.toFixed(2)}
-              </Typography>
-            </Box>
-            <Divider sx={{ my: 1 }} />
-            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-              <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                Total:
-              </Typography>
-              <Typography variant="h6">
-                ${total.toFixed(2)}
-              </Typography>
-            </Box>
-
+          <Typography variant="h6">Productos</Typography>
+          {cartItems.map((i) => (
             <Box
-              sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}
+              key={i.id}
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                py: 1,
+              }}
             >
-              <Button onClick={handleBack}>Atrás</Button>
-              <Button variant="contained" color="primary" onClick={handleNext}>
-                Confirmar Pedido
-              </Button>
+              <Typography>
+                {i.name} x{i.quantity}
+              </Typography>
+              <Typography>
+                ${(i.price * i.quantity).toFixed(2)}
+              </Typography>
             </Box>
-          </Paper>
-        )}
-      </Box>
-  
+          ))}
 
-      {/* Modal de Agradecimiento */}
-      <Dialog open={showThankYouModal} onClose={handleCloseThankYouModal}>
+          <Divider sx={{ my: 2 }} />
+
+          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+            <Typography>Subtotal:</Typography>
+            <Typography>${subtotal.toFixed(2)}</Typography>
+          </Box>
+          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+            <Typography>Envío:</Typography>
+            <Typography>${shippingCost.toFixed(2)}</Typography>
+          </Box>
+          <Divider sx={{ my: 1 }} />
+          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+            <Typography variant="h6">Total:</Typography>
+            <Typography variant="h6">${total.toFixed(2)}</Typography>
+          </Box>
+
+          <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}>
+            <Button onClick={handleBack}>Atrás</Button>
+            <Button variant="contained" onClick={handleNext}>
+              Confirmar Pedido
+            </Button>
+          </Box>
+        </Paper>
+      )}
+
+      {/* Thank You Modal */}
+      <Dialog open={showThankYou} onClose={handleCloseThankYou}>
         <DialogTitle>¡Gracias por tu compra!</DialogTitle>
         <DialogContent>
-          <Typography variant="body1">
-            Tu pedido ha sido confirmado exitosamente.
-          </Typography>
-          <Typography variant="body2" sx={{ mt: 1 }}>
-            Recibirás un correo electrónico con los detalles de tu pedido.
+          <Typography>
+            Tu orden se creó correctamente.
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseThankYouModal} color="primary" autoFocus>
-            Aceptar
-          </Button>
+          <Button onClick={handleCloseThankYou}>Aceptar</Button>
         </DialogActions>
       </Dialog>
+
+      {/* Snackbar */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
-};
-
-export default Checkout;
+}

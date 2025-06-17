@@ -19,10 +19,18 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String name;
+
+    @Column(columnDefinition = "TEXT")
     private String description;
+
+    @Column(name = "image_url", length = 1000)
     private String imageUrl;
+
+    @Column(nullable = false)
     private BigDecimal price;
+
     private Integer stock;
 
     @ManyToOne
@@ -35,4 +43,3 @@ public class Product {
     @OneToMany(mappedBy = "product")
     private List<OrderItem> orderItems;
 }
-

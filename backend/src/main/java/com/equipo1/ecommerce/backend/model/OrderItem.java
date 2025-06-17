@@ -1,10 +1,9 @@
 package com.equipo1.ecommerce.backend.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "order_items")
@@ -18,15 +17,15 @@ public class OrderItem {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "order_id")
+    @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
     @ManyToOne
-    @JoinColumn(name = "product_id")
+    @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
     private Integer quantity;
 
-    private Double priceUnit;
+    @Column(nullable = false, name = "price_unit")
+    private BigDecimal priceUnit;
 }
-

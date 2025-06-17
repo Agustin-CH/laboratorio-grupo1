@@ -1,11 +1,5 @@
 import React, { useState, useContext } from "react";
-import {
-  Box,
-  Typography,
-  Stack,
-  IconButton,
-  Button
-} from "@mui/material";
+import { Box, Typography, Stack, IconButton, Button } from "@mui/material";
 import {
   Search as SearchIcon,
   Person as PersonIcon,
@@ -18,7 +12,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
 const Header = () => {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm] = useState("");
   const navigate = useNavigate();
   const { user, logout } = useContext(AuthContext);
 
@@ -60,17 +54,17 @@ const Header = () => {
           Buscar
         </Button>
 
-        {/* Mi Perfil */}
-        {user ? (
+        {/* Mi Perfil (si está logueado) */}
+        {user && (
           <Button
             component={Link}
             to="/mi-perfil"
             startIcon={<PersonIcon />}
             sx={{ textTransform: "none" }}
           >
-            {user.fullName}
+            {user.fullName || user.nombre}
           </Button>
-        ) : null}
+        )}
 
         {/* Carrito */}
         <Button

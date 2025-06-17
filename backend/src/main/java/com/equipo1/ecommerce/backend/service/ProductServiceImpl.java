@@ -70,7 +70,6 @@ public class ProductServiceImpl implements ProductService {
                 .stream().map(this::toDTO).toList();
     }
 
-    // Conversor
     private ProductDTO toDTO(Product p) {
         ProductDTO dto = new ProductDTO();
         dto.setId(p.getId());
@@ -79,6 +78,11 @@ public class ProductServiceImpl implements ProductService {
         dto.setPrice(p.getPrice());
         dto.setStock(p.getStock());
         dto.setImageUrl(p.getImageUrl());
+        dto.setCategoryName(
+                p.getCategory() != null
+                        ? p.getCategory().getName()
+                        : ""
+        );
         return dto;
     }
 }
