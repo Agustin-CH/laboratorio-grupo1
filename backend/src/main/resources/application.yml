@@ -1,0 +1,28 @@
+# src/main/resources/application.yml
+spring:
+  application:
+    name: backend
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/ecommerce?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: ecomuser
+    password: ecompass
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+    properties:
+      hibernate.format_sql: true
+    defer-datasource-initialization: true
+
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:data.sql
+
+server:
+  port: 8080
+
+jwt:
+  secret: m1Vf-lzp9UXRnsO_0Rn3dlaz5DnGyNNA8_-S1W0lUw8=
+  expiration: 3600000
