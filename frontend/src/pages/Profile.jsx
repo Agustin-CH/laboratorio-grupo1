@@ -1,4 +1,3 @@
-// src/pages/Profile.jsx
 import React, { useEffect, useState, useContext } from "react";
 import {
   Box,
@@ -86,6 +85,20 @@ const Profile = () => {
     }
   };
 
+  const handleCancel = () => {
+    if (!user) return;
+    setForm({
+      fullName:   user.fullName   || "",
+      email:      user.email      || "",
+      nationality:user.nationality|| "",
+      address:    user.address    || "",
+      birthDate:  user.birthDate ? user.birthDate.slice(0,10) : "",
+      gender:     user.gender     || ""
+    });
+    setEditMode(false);
+    setAlert(null);
+  };
+
   const allEmpty = !form.nationality && !form.address && !form.birthDate && !form.gender;
 
   if (loading) return <CircularProgress sx={{ mt: 4 }} />;
@@ -102,7 +115,7 @@ const Profile = () => {
         </Alert>
       )}
 
-      {/* Si no hay datos (todos vacíos) o estamos en modo edición, mostrar el formulario */}
+      {/* Mostrar formulario si no hay datos o en edición */}
       {(allEmpty || editMode) ? (
         <Box component="form" onSubmit={handleSave}>
           <Stack spacing={2}>
@@ -114,7 +127,6 @@ const Profile = () => {
               required
               fullWidth
             />
-
             <TextField
               label="Email"
               name="email"
@@ -124,7 +136,6 @@ const Profile = () => {
               required
               fullWidth
             />
-
             <TextField
               label="Nacionalidad"
               name="nationality"
@@ -132,7 +143,6 @@ const Profile = () => {
               onChange={handleChange}
               fullWidth
             />
-
             <TextField
               label="Dirección"
               name="address"
@@ -140,7 +150,6 @@ const Profile = () => {
               onChange={handleChange}
               fullWidth
             />
-
             <TextField
               label="Fecha de nacimiento"
               name="birthDate"
@@ -150,7 +159,6 @@ const Profile = () => {
               InputLabelProps={{ shrink: true }}
               fullWidth
             />
-
             <TextField
               select
               label="Género"
@@ -169,17 +177,7 @@ const Profile = () => {
             <Box display="flex" justifyContent="flex-end" gap={2} mt={2}>
               <Button
                 variant="outlined"
-                onClick={() => {
-                  setForm({
-                    fullName:   user.fullName   || "",
-                    email:      user.email      || "",
-                    nationality:user.nationality|| "",
-                    address:    user.address    || "",
-                    birthDate:  user.birthDate ? user.birthDate.slice(0,10) : "",
-                    gender:     user.gender     || ""
-                  });
-                  setEditMode(false);
-                }}
+                onClick={handleCancel}
                 disabled={saving}
               >
                 Cancelar
@@ -191,7 +189,7 @@ const Profile = () => {
           </Stack>
         </Box>
       ) : (
-        /* Si ya hay datos y no estamos editando, mostrar card con info */
+        /* Mostrar tarjeta con la información y botón editar */
         <Card>
           <CardContent>
             <Typography><strong>Nombre:</strong> {form.fullName}</Typography>
