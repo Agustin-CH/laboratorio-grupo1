@@ -24,24 +24,13 @@ import {
   MenuItem,
 } from "@mui/material";
 import FilterListIcon from "@mui/icons-material/FilterList";
-import axios from "axios";
+import api from "../services/api"; // usa el proxy a /api
 import { obtenerCarrito, agregarAlCarrito } from "../utils/CartUtils";
 
-const defaultImage =
-  "https://via.placeholder.com/800?text=Imagen+no+disponible";
-const categories = [
-  "Todos",
-  "Tecnología",
-  "Hogar",
-  "Ropa",
-  "Libros",
-  "Juguetes",
-];
-
+const defaultImage = "https://via.placeholder.com/800?text=No+Image";
+const categories = ["Todos", "Tecnología", "Hogar", "Ropa", "Libros", "Juguetes"];
 const theme = createTheme({
-  typography: {
-    fontFamily: "'Poppins', 'Helvetica Neue', sans-serif",
-  },
+  typography: { fontFamily: "'Poppins', 'Helvetica Neue', sans-serif" },
 });
 
 function ProductCatalog() {
@@ -59,22 +48,11 @@ function ProductCatalog() {
     setCartItems(obtenerCarrito());
   }, []);
 
-  const handleAgregarAlCarrito = (producto, quantity) => {
-    const { carritoActualizado, message } = agregarAlCarrito(
-      producto,
-      quantity
-    );
-    setCartItems(carritoActualizado);
-    setSnackbarMessage(message);
-    setSnackbarOpen(true);
-    setSelectedProduct(null);
-  };
-
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get("http://localhost:3001/products");
-        setProducts(response.data);
+        const { data } = await api.get("/products");
+        setProducts(data);
       } catch (error) {
         console.error("Error al cargar productos:", error);
       }
@@ -82,10 +60,16 @@ function ProductCatalog() {
     fetchProducts();
   }, []);
 
+  const handleAgregarAlCarrito = (product, quantity) => {
+    const { carritoActualizado, message } = agregarAlCarrito(product, quantity);
+    setCartItems(carritoActualizado);
+    setSnackbarMessage(message);
+    setSnackbarOpen(true);
+    setSelectedProduct(null);
+  };
+
   const handleSnackbarClose = () => setSnackbarOpen(false);
-
   const toggleDrawer = (open) => () => setDrawerOpen(open);
-
   const handleCategorySelect = (category) => {
     setSelectedCategory(category);
     setDrawerOpen(false);
@@ -94,7 +78,7 @@ function ProductCatalog() {
   const displayedProducts =
     selectedCategory === "Todos"
       ? products
-      : products.filter((p) => p.category === selectedCategory);
+      : products.filter((p) => p.categoryName === selectedCategory);
 
   return (
     <ThemeProvider theme={theme}>
@@ -147,10 +131,10 @@ function ProductCatalog() {
               .sort((a, b) => a.name.localeCompare(b.name))
               .map((product) => {
                 const inCart =
-                  cartItems.find((item) => item.id === product.id)?.quantity ||
-                  0;
-                  const available = Math.max(0, product.stock - inCart);
-                  return (
+                  cartItems.find((item) => item.id === product.id)
+                    ?.quantity || 0;
+                const available = Math.max(0, product.stock - inCart);
+                return (
                   <Grid item xs={12} sm={6} md={4} key={product.id}>
                     <Card
                       sx={{ cursor: "pointer", borderRadius: 1, boxShadow: 2 }}
@@ -161,7 +145,7 @@ function ProductCatalog() {
                     >
                       <CardMedia
                         component="img"
-                        image={product.image}
+                        image={product.imageUrl || defaultImage}
                         onError={(e) => (e.target.src = defaultImage)}
                         alt={product.name}
                         sx={{
@@ -170,12 +154,15 @@ function ProductCatalog() {
                           backgroundColor: "#f5f5f5",
                         }}
                       />
-                      {/* Mostrar mensaje de sin stock debajo de la imagen */}
                       {available <= 0 && (
                         <Typography
                           variant="subtitle2"
                           color="error"
-                          sx={{ textAlign: "center", mt: 1, fontWeight: "bold" }}
+                          sx={{
+                            textAlign: "center",
+                            mt: 1,
+                            fontWeight: "bold",
+                          }}
                         >
                           Sin stock
                         </Typography>
@@ -211,76 +198,79 @@ function ProductCatalog() {
         onClose={() => setSelectedProduct(null)}
         fullWidth
       >
-        {selectedProduct &&
-          (() => {
-            const inCart =
-              cartItems.find((item) => item.id === selectedProduct.id)
-                ?.quantity || 0;
-            const available = selectedProduct.stock - inCart;
-            return (
-              <>
-                <DialogTitle>{selectedProduct.name}</DialogTitle>
-                <DialogContent>
-                  <CardMedia
-                    component="img"
-                    image={selectedProduct.image}
-                    onError={(e) => (e.target.src = defaultImage)}
-                    alt={selectedProduct.name}
-                    sx={{
-                      width: "100%",
-                      height: 250,
-                      objectFit: "cover",
-                      mb: 2,
-                    }}
-                  />
-                  {available <= 0 && (
-                    <Typography
-                      variant="subtitle2"
-                      color="error"
-                      sx={{ textAlign: "center", mb: 2, fontWeight: "bold" }}
-                    >
-                      Sin stock
-                    </Typography>
-                  )}
-                  <Typography>{selectedProduct.description}</Typography>
-                  <Typography variant="body1" sx={{ mt: 1 }}>
-                    Precio: ${selectedProduct.price.toFixed(2)}
-                  </Typography>
+        {selectedProduct && (() => {
+          const inCart =
+            cartItems.find((item) => item.id === selectedProduct.id)
+              ?.quantity || 0;
+          const available = selectedProduct.stock - inCart;
+          return (
+            <>
+              <DialogTitle>{selectedProduct.name}</DialogTitle>
+              <DialogContent>
+                <CardMedia
+                  component="img"
+                  image={selectedProduct.imageUrl || defaultImage}
+                  onError={(e) => (e.target.src = defaultImage)}
+                  alt={selectedProduct.name}
+                  sx={{
+                    width: "100%",
+                    height: 250,
+                    objectFit: "cover",
+                    mb: 2,
+                  }}
+                />
+                {available <= 0 && (
                   <Typography
-                    variant="body1"
-                    sx={{ mb: 2 }}
-                    color={available > 0 ? "textSecondary" : "error"}
-                  >
-                    Stock disponible: {available}
-                  </Typography>
-                  <TextField
-                    label="Cantidad"
-                    type="number"
-                    value={quantityToAdd}
-                    onChange={(e) => {
-                      let val = parseInt(e.target.value, 10) || 1;
-                      if (val < 1) val = 1;
-                      if (val > available) val = available;
-                      setQuantityToAdd(val);
+                    variant="subtitle2"
+                    color="error"
+                    sx={{
+                      textAlign: "center",
+                      mb: 2,
+                      fontWeight: "bold",
                     }}
-                    inputProps={{ min: 1, max: available }}
-                    fullWidth
-                    sx={{ mb: 2 }}
-                  />
-                  <Button
-                    variant="contained"
-                    fullWidth
-                    disabled={available <= 0}
-                    onClick={() =>
-                      handleAgregarAlCarrito(selectedProduct, quantityToAdd)
-                    }
                   >
-                    {available > 0 ? `Agregar ${quantityToAdd}` : "Sin Stock"}
-                  </Button>
-                </DialogContent>
-              </>
-            );
-          })()}
+                    Sin stock
+                  </Typography>
+                )}
+                <Typography>{selectedProduct.description}</Typography>
+                <Typography variant="body1" sx={{ mt: 1 }}>
+                  Precio: ${selectedProduct.price.toFixed(2)}
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{ mb: 2 }}
+                  color={available > 0 ? "textSecondary" : "error"}
+                >
+                  Stock disponible: {available}
+                </Typography>
+                <TextField
+                  label="Cantidad"
+                  type="number"
+                  value={quantityToAdd}
+                  onChange={(e) => {
+                    let val = parseInt(e.target.value, 10) || 1;
+                    if (val < 1) val = 1;
+                    if (val > available) val = available;
+                    setQuantityToAdd(val);
+                  }}
+                  inputProps={{ min: 1, max: available }}
+                  fullWidth
+                  sx={{ mb: 2 }}
+                />
+                <Button
+                  variant="contained"
+                  fullWidth
+                  disabled={available <= 0}
+                  onClick={() =>
+                    handleAgregarAlCarrito(selectedProduct, quantityToAdd)
+                  }
+                >
+                  {available > 0 ? `Agregar ${quantityToAdd}` : "Sin Stock"}
+                </Button>
+              </DialogContent>
+            </>
+          );
+        })()}
       </Dialog>
 
       <Snackbar
@@ -297,7 +287,6 @@ function ProductCatalog() {
           {snackbarMessage}
         </Alert>
       </Snackbar>
-
     </ThemeProvider>
   );
 }
