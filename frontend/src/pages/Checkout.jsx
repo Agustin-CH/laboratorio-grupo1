@@ -28,13 +28,6 @@ import {
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
-import {
-  calcularEnvio,
-  calcularSubtotal,
-  calcularTotal,
-  obtenerCarrito,
-  vaciarCarrito,
-} from "../utils/CartUtils";
 
 const steps = ["Información de Envío", "Información de Pago", "Revisar Pedido"];
 
