@@ -1,4 +1,3 @@
-// src/main/java/com/equipo1/ecommerce/backend/controller/AuthController.java
 package com.equipo1.ecommerce.backend.controller;
 
 import com.equipo1.ecommerce.backend.dto.*;
@@ -37,7 +36,6 @@ public class AuthController {
         newUser.setPassword(passwordEncoder.encode(req.getPassword()));
         newUser.setRoles(Set.of(User.Role.USER));
 
-        // Inicializar carrito vacío si lo usas
         Cart cart = new Cart();
         cart.setUser(newUser);
         newUser.setCart(cart);
@@ -49,10 +47,16 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponseDTO> login(@RequestBody AuthRequestDTO req) {
-        authManager.authenticate(
-                new UsernamePasswordAuthenticationToken(req.getEmail(), req.getPassword())
-        );
+    public ResponseEntity<?> login(@RequestBody AuthRequestDTO req) {
+        try {
+            authManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(req.getEmail(), req.getPassword())
+            );
+        } catch (BadCredentialsException e) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(new ErrorDTO("Credenciales incorrectas"));
+        }
 
         String token = jwtUtil.generateToken(req.getEmail());
         User user = userRepository.findByEmail(req.getEmail()).orElseThrow();

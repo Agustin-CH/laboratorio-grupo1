@@ -1,414 +1,213 @@
-import { useState, useEffect, useRef } from "react"
+import React, { useEffect, useState, useContext } from "react";
 import {
   Box,
-  Typography,
-  Button,
-  useMediaQuery,
   TextField,
-  Paper,
-  Divider,
-  Stack,
+  Button,
+  Typography,
   MenuItem,
-  Avatar,
-  Grid,
-} from "@mui/material"
-import SaveIcon from "@mui/icons-material/Save"
-import EditIcon from "@mui/icons-material/Edit"
-import { useNavigate } from "react-router-dom"
+  CircularProgress,
+  Alert,
+  Stack,
+  Paper,
+  Card,
+  CardContent,
+  CardActions,
+} from "@mui/material";
+import api from "../services/api";
+import { AuthContext } from "../context/AuthContext";
+
+const genders = [
+  { value: "MALE", label: "Masculino" },
+  { value: "FEMALE", label: "Femenino" },
+  { value: "OTHER", label: "Otro" },
+];
 
 const Profile = () => {
-  const isMobile = useMediaQuery("(max-width:600px)")
-  const navigate = useNavigate()
-  const [isEditing, setIsEditing] = useState(false)
-  const [lastLogin, setLastLogin] = useState("Hace 27 minutos")
-  const originalDataRef = useRef(null)
-  const [formData, setFormData] = useState(() => {
-    const savedData = localStorage.getItem("profileData")
-    return savedData
-      ? JSON.parse(savedData)
-      : {
-          nombre: "dx",
-          apellido: "Caprie",
-          fechaNacimiento: "1990-06-29",
-          nacionalidad: "Argentina",
-          email: "john.smith@example.com",
-          idioma: "Español (Español)",
-          genero: "Masculino",
-          creado: "29-Jun-2019",
-        }
-  })
-  const [editFormData, setEditFormData] = useState({})
-  const [formErrors, setFormErrors] = useState({})
-  const [showSuccess, setShowSuccess] = useState(false)
+  const { logout } = useContext(AuthContext);
+  const [user, setUser]           = useState(null);
+  const [form, setForm]           = useState({
+    fullName: "",
+    email: "",
+    nationality: "",
+    address: "",
+    birthDate: "",
+    gender: ""
+  });
+  const [loading, setLoading]     = useState(true);
+  const [saving, setSaving]       = useState(false);
+  const [alert, setAlert]         = useState(null);
+  const [editMode, setEditMode]   = useState(false);
 
   useEffect(() => {
-    localStorage.setItem("profileData", JSON.stringify(formData))
-  }, [formData])
+    api.get("/users/me")
+      .then(({ data }) => {
+        setUser(data);
+        setForm({
+          fullName:   data.fullName   || "",
+          email:      data.email      || "",
+          nationality:data.nationality|| "",
+          address:    data.address    || "",
+          birthDate:  data.birthDate ? data.birthDate.slice(0,10) : "",
+          gender:     data.gender     || ""
+        });
+      })
+      .catch(err => {
+        if (err.response?.status === 401) logout();
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
-  useEffect(() => {
-    if (isEditing) {
-      setEditFormData({ ...formData })
-    }
-  }, [isEditing, formData])
+  const handleChange = e => {
+    const { name, value } = e.target;
+    setForm(f => ({ ...f, [name]: value }));
+  };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target
-    setEditFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
-  }
-
-  const validateForm = () => {
-    const errors = {}
-    let isValid = true
-
-    if (!/^[a-zA-Z\s]{2,}$/.test(editFormData.nombre)) {
-      errors.nombre = "Nombre inválido. Solo letras y mínimo 2 caracteres."
-      isValid = false
-    }
-
-    if (!/^[a-zA-Z\s]{2,}$/.test(editFormData.apellido)) {
-      errors.apellido = "Apellido inválido. Solo letras y mínimo 2 caracteres."
-      isValid = false
-    }
-
-    const birthDate = new Date(editFormData.fechaNacimiento)
-    const today = new Date()
-    const age = today.getFullYear() - birthDate.getFullYear()
-    const monthDiff = today.getMonth() - birthDate.getMonth()
-    const dayDiff = today.getDate() - birthDate.getDate()
-    const isOver18 = age > 18 || (age === 18 && (monthDiff > 0 || (monthDiff === 0 && dayDiff >= 0)))
-
-    if (!editFormData.fechaNacimiento || !isOver18) {
-      errors.fechaNacimiento = "Debes ser mayor de 18 años."
-      isValid = false
-    }
-
-    if (!editFormData.nacionalidad) {
-      errors.nacionalidad = "Selecciona una nacionalidad."
-      isValid = false
-    }
-
-    setFormErrors(errors)
-    return isValid
-  }
-
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    if (validateForm()) {
-      setFormData(editFormData)
-
-      localStorage.setItem("profileData", JSON.stringify(editFormData))
-      setShowSuccess(true)
-      setTimeout(() => {
-        setShowSuccess(false)
-        setIsEditing(false)
-      }, 1000)
-    }
-  }
-
-  const handleEditClick = () => {
-    originalDataRef.current = { ...formData }
-    setIsEditing(true)
-  }
-  const handleCancel = () => {
-    setIsEditing(false)
-  }
-  const formatDate = (dateString) => {
-    if (!dateString) return ""
-    if (dateString.includes("/")) {
-      return dateString
-    }
+  const handleSave = async e => {
+    e.preventDefault();
+    setSaving(true);
     try {
-      const date = new Date(dateString)
-      return `${date.getDate().toString().padStart(2, "0")}/${(date.getMonth() + 1).toString().padStart(2, "0")}/${date.getFullYear()}`
-    } catch (e) {
-      return dateString
+      const { data } = await api.put("/users/me", form);
+      setUser(data);
+      setForm({
+        fullName:   data.fullName   || "",
+        email:      data.email      || "",
+        nationality:data.nationality|| "",
+        address:    data.address    || "",
+        birthDate:  data.birthDate ? data.birthDate.slice(0,10) : "",
+        gender:     data.gender     || ""
+      });
+      setAlert({ type: "success", msg: "Perfil guardado correctamente" });
+      setEditMode(false);
+    } catch {
+      setAlert({ type: "error", msg: "Error al guardar los cambios" });
+    } finally {
+      setSaving(false);
     }
-  }
-  const ProfileView = () => (
-    <Box sx={{ maxWidth: 600, mx: "auto", p: isMobile ? 2 : 4, textAlign: "center" }}>
-      <Avatar
-        sx={{
-          width: 120,
-          height: 120,
-          mx: "auto",
-          bgcolor: "#6AC259",
-          mb: 2,
-        }}
-      >
-        <Typography variant="h3" sx={{ color: "white" }}>
-          {formData.nombre.charAt(0)}
-          {formData.apellido.charAt(0)}
-        </Typography>
-      </Avatar>
+  };
 
-      <Typography
-        variant="h5"
-        sx={{
-          mb: 2,
-          fontWeight: 400,
-          color: "#4BBFB4",
-          letterSpacing: "1px",
-        }}
-      >
-        {formData.nombre} {formData.apellido}
+  const handleCancel = () => {
+    if (!user) return;
+    setForm({
+      fullName:   user.fullName   || "",
+      email:      user.email      || "",
+      nationality:user.nationality|| "",
+      address:    user.address    || "",
+      birthDate:  user.birthDate ? user.birthDate.slice(0,10) : "",
+      gender:     user.gender     || ""
+    });
+    setEditMode(false);
+    setAlert(null);
+  };
+
+  const allEmpty = !form.nationality && !form.address && !form.birthDate && !form.gender;
+
+  if (loading) return <CircularProgress sx={{ mt: 4 }} />;
+
+  return (
+    <Paper elevation={3} sx={{ maxWidth: 600, mx: "auto", p: 4, mt: 4 }}>
+      <Typography variant="h5" gutterBottom>
+        Mi Perfil
       </Typography>
 
-      <Divider sx={{ my: 3 }} />
+      {alert && (
+        <Alert severity={alert.type} onClose={() => setAlert(null)} sx={{ mb: 2 }}>
+          {alert.msg}
+        </Alert>
+      )}
 
-      <Box sx={{ maxWidth: 500, mx: "auto" }}>
-        <Grid container spacing={1} sx={{ textAlign: "left", mb: 1 }}>
-          <Grid item xs={5} sx={{ textAlign: "right", color: "#999" }}>
-            <Typography>Nombre:</Typography>
-          </Grid>
-          <Grid item xs={7}>
-            <Typography>
-              {formData.nombre} {formData.apellido}
-            </Typography>
-          </Grid>
-        </Grid>
+      {/* Mostrar formulario si no hay datos o en edición */}
+      {(allEmpty || editMode) ? (
+        <Box component="form" onSubmit={handleSave}>
+          <Stack spacing={2}>
+            <TextField
+              label="Nombre completo"
+              name="fullName"
+              value={form.fullName}
+              onChange={handleChange}
+              required
+              fullWidth
+            />
+            <TextField
+              label="Email"
+              name="email"
+              type="email"
+              value={form.email}
+              onChange={handleChange}
+              required
+              fullWidth
+            />
+            <TextField
+              label="Nacionalidad"
+              name="nationality"
+              value={form.nationality}
+              onChange={handleChange}
+              fullWidth
+            />
+            <TextField
+              label="Dirección"
+              name="address"
+              value={form.address}
+              onChange={handleChange}
+              fullWidth
+            />
+            <TextField
+              label="Fecha de nacimiento"
+              name="birthDate"
+              type="date"
+              value={form.birthDate}
+              onChange={handleChange}
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+            />
+            <TextField
+              select
+              label="Género"
+              name="gender"
+              value={form.gender}
+              onChange={handleChange}
+              fullWidth
+            >
+              {genders.map(g => (
+                <MenuItem key={g.value} value={g.value}>
+                  {g.label}
+                </MenuItem>
+              ))}
+            </TextField>
 
-        <Grid container spacing={1} sx={{ textAlign: "left", mb: 1 }}>
-          <Grid item xs={5} sx={{ textAlign: "right", color: "#999" }}>
-            <Typography>Correo electrónico:</Typography>
-          </Grid>
-          <Grid item xs={7}>
-            <Typography>{formData.email}</Typography>
-          </Grid>
-        </Grid>
-
-        <Grid container spacing={1} sx={{ textAlign: "left", mb: 1 }}>
-          <Grid item xs={5} sx={{ textAlign: "right", color: "#999" }}>
-            <Typography>Fecha de nacimiento:</Typography>
-          </Grid>
-          <Grid item xs={7}>
-            <Typography>{formatDate(formData.fechaNacimiento)}</Typography>
-          </Grid>
-        </Grid>
-
-        <Grid container spacing={1} sx={{ textAlign: "left", mb: 1 }}>
-          <Grid item xs={5} sx={{ textAlign: "right", color: "#999" }}>
-            <Typography>Nacionalidad:</Typography>
-          </Grid>
-          <Grid item xs={7}>
-            <Typography>{formData.nacionalidad}</Typography>
-          </Grid>
-        </Grid>
-
-        <Grid container spacing={1} sx={{ textAlign: "left", mb: 1 }}>
-          <Grid item xs={5} sx={{ textAlign: "right", color: "#999" }}>
-            <Typography>Género:</Typography>
-          </Grid>
-          <Grid item xs={7}>
-            <Typography>{formData.genero}</Typography>
-          </Grid>
-        </Grid>
-      </Box>
-
-      <Button
-        variant="contained"
-        startIcon={<EditIcon />}
-        onClick={handleEditClick}
-        sx={{
-          mt: 4,
-          bgcolor: "#4BBFB4",
-          color: "white",
-          borderRadius: 1,
-          px: 4,
-          "&:hover": {
-            bgcolor: "#3da89e",
-          },
-        }}
-      >
-        EDITAR PERFIL
-      </Button>
-    </Box>
-  )
-  const EditForm = () => (
-    <Box sx={{ maxWidth: 600, mx: "auto", p: isMobile ? 2 : 4 }}>
-      <Typography
-        variant="h5"
-        sx={{
-          mb: 4,
-          fontWeight: 500,
-          textAlign: "center",
-          color: "black",
-        }}
-      >
-        EDITAR MI PERFIL
-      </Typography>
-
-      <Paper elevation={0} sx={{ p: isMobile ? 2 : 4, border: "1px solid #e0e0e0", borderRadius: 2 }}>
-        <form onSubmit={handleSubmit}>
-          <Stack spacing={3}>
-            <Box>
-              <Typography variant="body2" sx={{ mb: 1 }}>
-                Nombre
-              </Typography>
-              <TextField
-                fullWidth
-                name="nombre"
-                variant="outlined"
-                value={editFormData.nombre || ""}
-                onChange={handleChange}
-                error={!!formErrors.nombre}
-                helperText={formErrors.nombre}
-                InputProps={{
-                  sx: { borderRadius: 1 },
-                }}
-              />
-            </Box>
-
-            <Box>
-              <Typography variant="body2" sx={{ mb: 1 }}>
-                Apellido
-              </Typography>
-              <TextField
-                fullWidth
-                name="apellido"
-                variant="outlined"
-                value={editFormData.apellido || ""}
-                onChange={handleChange}
-                error={!!formErrors.apellido}
-                helperText={formErrors.apellido}
-                InputProps={{
-                  sx: { borderRadius: 1 },
-                }}
-              />
-            </Box>
-
-            <Box>
-              <Typography variant="body2" sx={{ mb: 1 }}>
-                Fecha de nacimiento
-              </Typography>
-              <TextField
-                fullWidth
-                name="fechaNacimiento"
-                type="date"
-                variant="outlined"
-                value={editFormData.fechaNacimiento || ""}
-                onChange={handleChange}
-                error={!!formErrors.fechaNacimiento}
-                helperText={formErrors.fechaNacimiento}
-                InputProps={{
-                  sx: { borderRadius: 1 },
-                }}
-              />
-            </Box>
-
-            <Box>
-              <Typography variant="body2" sx={{ mb: 1 }}>
-                Nacionalidad
-              </Typography>
-              <TextField
-                fullWidth
-                name="nacionalidad"
-                variant="outlined"
-                select
-                value={editFormData.nacionalidad || ""}
-                onChange={handleChange}
-                error={!!formErrors.nacionalidad}
-                helperText={formErrors.nacionalidad}
-                InputProps={{
-                  sx: { borderRadius: 1 },
-                }}
-              >
-                <MenuItem value="Argentina">Argentina</MenuItem>
-                <MenuItem value="Uruguay">Uruguay</MenuItem>
-                <MenuItem value="Brasil">Brasil</MenuItem>
-                <MenuItem value="Chile">Chile</MenuItem>
-                <MenuItem value="Paraguay">Paraguay</MenuItem>
-              </TextField>
-            </Box>
-
-            <Box>
-              <Typography variant="body2" sx={{ mb: 1 }}>
-                Email
-              </Typography>
-              <TextField
-                fullWidth
-                name="email"
-                variant="outlined"
-                value={editFormData.email || ""}
-                InputProps={{
-                  readOnly: true,
-                  sx: {
-                    borderRadius: 1,
-                    bgcolor: "#f5f5f5",
-                  },
-                }}
-              />
-            </Box>
-
-            <Box>
-              <Typography variant="body2" sx={{ mb: 1 }}>
-                Género
-              </Typography>
-              <TextField
-                fullWidth
-                name="genero"
-                variant="outlined"
-                select
-                value={editFormData.genero || ""}
-                onChange={handleChange}
-                InputProps={{
-                  sx: { borderRadius: 1 },
-                }}
-              >
-                <MenuItem value="Masculino">Masculino</MenuItem>
-                <MenuItem value="Femenino">Femenino</MenuItem>
-                <MenuItem value="Otro">Otro</MenuItem>
-                <MenuItem value="Prefiero no decir">Prefiero no decir</MenuItem>
-              </TextField>
-            </Box>
-
-            <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
+            <Box display="flex" justifyContent="flex-end" gap={2} mt={2}>
               <Button
-                type="button"
                 variant="outlined"
                 onClick={handleCancel}
-                sx={{
-                  borderRadius: 1,
-                  flex: 1,
-                  py: 1.5,
-                  textTransform: "uppercase",
-                }}
+                disabled={saving}
               >
-                CANCELAR
+                Cancelar
               </Button>
-              <Button
-                type="submit"
-                variant="contained"
-                startIcon={<SaveIcon />}
-                sx={{
-                  backgroundColor: "black",
-                  color: "white",
-                  borderRadius: 1,
-                  fontWeight: 600,
-                  flex: 1,
-                  py: 1.5,
-                }}
-              >
-                GUARDAR
+              <Button type="submit" variant="contained" disabled={saving}>
+                {saving ? "Guardando..." : "Guardar cambios"}
               </Button>
             </Box>
-            {showSuccess && (
-              <Box sx={{ bgcolor: "#d4edda", color: "#155724", p: 2, borderRadius: 2, textAlign: "center" }}>
-                ¡Datos guardados correctamente!
-              </Box>
-            )}
           </Stack>
-        </form>
-      </Paper>
-    </Box>
-  )
-  return (
-    <Box sx={{ fontFamily: "'Helvetica Neue', sans-serif" }}>
-      {isEditing ? <EditForm /> : <ProfileView />}
-    </Box>
-  )
-}
+        </Box>
+      ) : (
+        /* Mostrar tarjeta con la información y botón editar */
+        <Card>
+          <CardContent>
+            <Typography><strong>Nombre:</strong> {form.fullName}</Typography>
+            <Typography><strong>Email:</strong> {form.email}</Typography>
+            <Typography><strong>Nacionalidad:</strong> {form.nationality}</Typography>
+            <Typography><strong>Dirección:</strong> {form.address}</Typography>
+            <Typography><strong>Fecha de nacimiento:</strong> {form.birthDate}</Typography>
+            <Typography><strong>Género:</strong> {genders.find(g => g.value === form.gender)?.label}</Typography>
+          </CardContent>
+          <CardActions>
+            <Button size="small" onClick={() => setEditMode(true)}>
+              Editar datos
+            </Button>
+          </CardActions>
+        </Card>
+      )}
+    </Paper>
+  );
+};
 
-export default Profile
+export default Profile;

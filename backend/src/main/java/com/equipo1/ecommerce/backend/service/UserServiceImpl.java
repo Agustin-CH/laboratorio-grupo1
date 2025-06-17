@@ -1,12 +1,14 @@
 package com.equipo1.ecommerce.backend.service;
 
 import com.equipo1.ecommerce.backend.dto.UserDTO;
+import com.equipo1.ecommerce.backend.dto.UserUpdateDTO;
 import com.equipo1.ecommerce.backend.model.User;
-import com.equipo1.ecommerce.backend.model.User.Role;
 import com.equipo1.ecommerce.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -49,5 +51,31 @@ public class UserServiceImpl implements UserService {
         user.setRoles(roles);
         User saved = userRepository.save(user);
         return new UserDTO(saved);
+    }
+
+    @Override
+    public UserDTO getByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+        return toDTO(user);
+    }
+
+    @Override
+    public UserDTO updateProfileByEmail(String email, UserUpdateDTO update) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        user.setFullName(update.getFullName());
+        user.setNationality(update.getNationality());
+        user.setAddress(update.getAddress());
+        user.setBirthDate(LocalDate.parse(update.getBirthDate()));
+        user.setGender(User.Gender.valueOf(update.getGender()));
+
+        User saved = userRepository.save(user);
+        return new UserDTO(saved);
+    }
+
+    private UserDTO toDTO(User user) {
+        return new UserDTO(user);
     }
 }

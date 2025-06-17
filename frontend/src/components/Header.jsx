@@ -1,18 +1,26 @@
 import React, { useState, useContext } from "react";
-import { Box, Typography, Stack, IconButton, Button } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
-import PersonIcon from "@mui/icons-material/Person";
-import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
-import HomeIcon from "@mui/icons-material/Home";
-import LoginIcon from "@mui/icons-material/Login";
-import LogoutIcon from "@mui/icons-material/Logout";
+import {
+  Box,
+  Typography,
+  Stack,
+  IconButton,
+  Button
+} from "@mui/material";
+import {
+  Search as SearchIcon,
+  Person as PersonIcon,
+  ShoppingBag as ShoppingBagIcon,
+  Home as HomeIcon,
+  Login as LoginIcon,
+  Logout as LogoutIcon
+} from "@mui/icons-material";
 import { Link, useNavigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext"; 
+import { AuthContext } from "../context/AuthContext";
 
 const Header = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
-  const { user, logout } = useContext(AuthContext); 
+  const { user, logout } = useContext(AuthContext);
 
   return (
     <Box
@@ -29,124 +37,71 @@ const Header = () => {
         left: 0,
         bgcolor: "white",
         zIndex: 1000,
-        width: "100vw", // <--- clave para ignorar padding/margen de contenedor
+        width: "100vw",
       }}
     >
-      <IconButton
-        component={Link}
-        to="/home"
-        sx={{ color: "black" }}
-        aria-label="Inicio"
-      >
+      {/* Logo / Home */}
+      <IconButton component={Link} to="/home" aria-label="Inicio">
         <HomeIcon />
       </IconButton>
 
-      <Typography
-        variant="h4"
-        sx={{ letterSpacing: "4px", fontWeight: 400 }}
-      >
+      <Typography variant="h4" sx={{ letterSpacing: "4px", fontWeight: 400 }}>
         E-COMMERCE
       </Typography>
 
-      <Stack direction="row" spacing={2}>
+      <Stack direction="row" spacing={2} alignItems="center">
+        {/* Buscar catálogo */}
         <Button
           component={Link}
           to="/catalogo"
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 0.5,
-            padding: 0,
-            minWidth: 0,
-            color: "black",
-            "&:hover": {
-              backgroundColor: "rgba(0,0,0,0.04)",
-            }
-          }}
+          startIcon={<SearchIcon />}
+          sx={{ textTransform: "none" }}
         >
-          <SearchIcon fontSize="small" />
-          <Typography variant="caption">BUSCAR</Typography>
+          Buscar
         </Button>
 
-        <Button
-          component={Link}
-          to="/mi-perfil"
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 0.5,
-            padding: 0,
-            minWidth: 0,
-            color: "black",
-            "&:hover": {
-              backgroundColor: "rgba(0,0,0,0.04)",
-            }
-          }}
-        >
-          <PersonIcon fontSize="small" />
-          <Typography variant="caption">
-            {user ? user.nombre : "CUENTA"}
-          </Typography>
-        </Button>
+        {/* Mi Perfil */}
+        {user ? (
+          <Button
+            component={Link}
+            to="/mi-perfil"
+            startIcon={<PersonIcon />}
+            sx={{ textTransform: "none" }}
+          >
+            {user.fullName}
+          </Button>
+        ) : null}
 
+        {/* Carrito */}
         <Button
           component={Link}
           to="/carrito"
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 0.5,
-            padding: 0,
-            minWidth: 0,
-            color: "black",
-            "&:hover": {
-              backgroundColor: "rgba(0,0,0,0.04)",
-            }
-          }}
+          startIcon={<ShoppingBagIcon />}
+          sx={{ textTransform: "none" }}
         >
-          <ShoppingBagIcon fontSize="small" />
-          <Typography variant="caption">CARRITO</Typography>
+          Carrito
         </Button>
 
+        {/* Login / Logout */}
         {user ? (
           <Button
             onClick={() => {
               logout();
               navigate("/home");
             }}
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 0.5,
-              padding: 0,
-              minWidth: 0,
-              color: "black",
-              "&:hover": {
-                backgroundColor: "rgba(0,0,0,0.04)",
-              }
-            }}
+            startIcon={<LogoutIcon />}
+            sx={{ textTransform: "none" }}
           >
-            <LogoutIcon fontSize="small" />
-            <Typography variant="caption">LOGOUT</Typography>
+            Logout
           </Button>
         ) : (
           <Button
             component={Link}
-            to="/usuarios"
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 0.5,
-              padding: 0,
-              minWidth: 0,
-              color: "black",
-              "&:hover": {
-                backgroundColor: "rgba(0,0,0,0.04)",
-              }
-            }}
+            to="/login"
+            startIcon={<LoginIcon />}
+            sx={{ textTransform: "none" }}
           >
-            <LoginIcon fontSize="small" />
-            <Typography variant="caption">LOGIN</Typography>
+            Login
           </Button>
         )}
       </Stack>
