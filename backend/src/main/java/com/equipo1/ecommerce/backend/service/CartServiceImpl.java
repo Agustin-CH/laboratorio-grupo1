@@ -20,7 +20,7 @@ public class CartServiceImpl implements CartService {
     private final UserRepository userRepository;
 
     public CartServiceImpl(CartRepository cartRepository, CartItemRepository cartItemRepository,
-            ProductRepository productRepository, UserRepository userRepository) {
+                           ProductRepository productRepository, UserRepository userRepository) {
         this.cartRepository = cartRepository;
         this.cartItemRepository = cartItemRepository;
         this.productRepository = productRepository;
@@ -70,25 +70,26 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public CartDTO convertToDTO(Cart cart) {
-        List<CartItemDTO> itemDTOs = cart.getItems().stream().map(item -> {
-            BigDecimal unitPrice = item.getProduct().getPrice();
-            BigDecimal subtotal = unitPrice.multiply(BigDecimal.valueOf(item.getQuantity()));
-            return new CartItemDTO(
-                    item.getProduct().getId(),
-                    item.getProduct().getName(),
-                    item.getQuantity(),
-                    unitPrice,
-                    subtotal);
-        }).collect(Collectors.toList());
+        List<CartItemDTO> itemDTOs = cart.getItems().stream()
+                .map(item -> {
+                    BigDecimal unitPrice = item.getProduct().getPrice();
+                    BigDecimal subtotal = unitPrice.multiply(BigDecimal.valueOf(item.getQuantity()));
+
+                    return new CartItemDTO(
+                            item.getProduct().getId(),
+                            item.getProduct().getName(),
+                            item.getQuantity(),
+                            unitPrice,
+                            subtotal,
+                            item.getProduct().getStock(),
+                            item.getProduct().getImageUrl()
+                    );
+                }).collect(Collectors.toList());
 
         BigDecimal total = itemDTOs.stream()
                 .map(CartItemDTO::getSubtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        return new CartDTO(
-                cart.getId(),
-                cart.getUser().getId(),
-                itemDTOs,
-                total);
+        return new CartDTO(cart.getId(), cart.getUser().getId(), itemDTOs, total);
     }
 }
