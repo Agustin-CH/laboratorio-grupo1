@@ -9,20 +9,27 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function Orders() {
   const { user, token } = useContext(AuthContext);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const headers = { Authorization: `Bearer ${token}` };
+  const navigate = useNavigate();
 
   useEffect(() => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
     axios
       .get(`/api/orders/user/${user.id}`, { headers })
       .then(({ data }) => setOrders(data))
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [user?.id, token]);
+  }, [user, token]);
 
   if (loading) return <Typography>Cargando pedidos…</Typography>;
   if (!orders.length) return <Typography>No tenés pedidos aún.</Typography>;
