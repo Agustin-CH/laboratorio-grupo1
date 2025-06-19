@@ -1,19 +1,19 @@
 package com.equipo1.ecommerce.backend.service;
 
+import com.equipo1.ecommerce.backend.dto.CategoryDTO;
 import com.equipo1.ecommerce.backend.model.Category;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface CategoryService {
 
     List<Category> listAll();
 
-    Optional<Category> getById(Long id);
+    Category getById(Long id);
 
-    Category create(Category category);
+    Category create(CategoryDTO dto);
 
-    Optional<Category> update(Long id, Category category);
+    Category update(Long id, CategoryDTO dto);
 
-    boolean delete(Long id);
+    void delete(Long id);
 }
