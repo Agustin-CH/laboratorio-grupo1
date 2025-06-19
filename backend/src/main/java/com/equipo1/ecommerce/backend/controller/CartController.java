@@ -35,14 +35,10 @@ public class CartController {
     public ResponseEntity<CartDTO> addToCart(
             @PathVariable Long userId,
             @PathVariable Long productId,
-            @RequestParam int quantity
-    ) {
-        try {
-            Cart updatedCart = cartService.addItemToCart(userId, productId, quantity);
-            return ResponseEntity.ok(cartService.convertToDTO(updatedCart));
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.badRequest().build();
-        }
+            @RequestParam int quantity) {
+        Cart updatedCart = cartService.addItemToCart(userId, productId, quantity);
+        return ResponseEntity.ok(cartService.convertToDTO(updatedCart));
+
     }
 
     /**
@@ -52,8 +48,7 @@ public class CartController {
     @DeleteMapping("/{userId}/remove/{productId}")
     public ResponseEntity<CartDTO> removeFromCart(
             @PathVariable Long userId,
-            @PathVariable Long productId
-    ) {
+            @PathVariable Long productId) {
         Cart updatedCart = cartService.removeItemFromCart(userId, productId);
         return ResponseEntity.ok(cartService.convertToDTO(updatedCart));
     }

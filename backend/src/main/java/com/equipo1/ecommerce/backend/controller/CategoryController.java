@@ -66,5 +66,5 @@ public class CategoryController {
     public ResponseEntity<List<ProductDTO>> getByCategory(@PathVariable Long id) {
         List<ProductDTO> prods = productService.findByCategoryId(id);
         return ResponseEntity.ok(prods);
-    }
+    }
 }

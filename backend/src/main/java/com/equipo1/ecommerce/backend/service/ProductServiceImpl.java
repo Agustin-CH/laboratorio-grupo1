@@ -4,6 +4,8 @@ import com.equipo1.ecommerce.backend.dto.ProductDTO;
 import com.equipo1.ecommerce.backend.model.Product;
 import com.equipo1.ecommerce.backend.repository.ProductRepository;
 import org.springframework.stereotype.Service;
+import com.equipo1.ecommerce.backend.exception.BadRequestException;
+import com.equipo1.ecommerce.backend.exception.ResourceNotFoundException;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -30,8 +32,14 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductDTO create(ProductDTO dto) {
-        if (dto.getPrice().compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("El precio no puede ser negativo");
+        if (dto.getPrice() == null || dto.getPrice().compareTo(BigDecimal.ZERO) < 0) {
+            throw new BadRequestException("El precio no puede ser negativo o nulo");
+        }
+        if (dto.getName() == null || dto.getName().isBlank()) {
+            throw new BadRequestException("El nombre del producto es obligatorio");
+        }
+        if (dto.getStock() == null || dto.getStock() < 0) {
+            throw new BadRequestException("El stock no puede ser negativo o nulo");
         }
 
         Product product = new Product();
@@ -45,15 +53,26 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Optional<ProductDTO> update(Long id, ProductDTO dto) {
-        return productRepo.findById(id).map(p -> {
-            p.setName(dto.getName());
-            p.setDescription(dto.getDescription());
-            p.setPrice(dto.getPrice());
-            p.setStock(dto.getStock());
-            p.setImageUrl(dto.getImageUrl());
-            return toDTO(productRepo.save(p));
-        });
+    public ProductDTO update(Long id, ProductDTO dto) {
+        Product product = productRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Producto con ID " + id + " no encontrado"));
+
+            if (dto.getPrice() == null || dto.getPrice().compareTo(BigDecimal.ZERO) < 0) {
+                throw new BadRequestException("El precio no puede ser negativo o nulo");
+            }
+            if (dto.getName() == null || dto.getName().isBlank()) {
+                throw new BadRequestException("El nombre del producto es obligatorio");
+            }
+            if (dto.getStock() == null || dto.getStock() < 0) {
+                throw new BadRequestException("El stock no puede ser negativo o nulo");
+            }
+
+            product.setName(dto.getName());
+            product.setDescription(dto.getDescription());
+            product.setPrice(dto.getPrice());
+            product.setStock(dto.getStock());
+            product.setImageUrl(dto.getImageUrl());
+            return toDTO(productRepo.save(product));
     }
 
     @Override
@@ -61,7 +80,7 @@ public class ProductServiceImpl implements ProductService {
         return productRepo.findById(id).map(p -> {
             productRepo.delete(p);
             return true;
-        }).orElse(false);
+        }).orElseThrow(() -> new ResourceNotFoundException("Producto con ID " + id + " no encontrado"));
     }
 
     @Override
@@ -89,8 +108,7 @@ public class ProductServiceImpl implements ProductService {
         dto.setCategoryName(
                 p.getCategory() != null
                         ? p.getCategory().getName()
-                        : ""
-        );
+                        : "");
         return dto;
     }
 }
