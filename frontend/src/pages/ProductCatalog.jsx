@@ -1,3 +1,4 @@
+// src/pages/ProductCatalog.jsx
 import React, { useState, useEffect, useContext } from "react";
 import {
   Box,
@@ -21,205 +22,175 @@ import {
   Alert,
   TextField,
   IconButton,
+  CircularProgress,
 } from "@mui/material";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { useNavigate } from "react-router-dom";
-import api from "../services/api"; // usa el proxy a /api
+import api from "../services/api";
 import { AuthContext } from "../context/AuthContext";
 
-const defaultImage = "/placeholder.png"; // tu placeholder local
-const categories = ["Todos", "Tecnología", "Hogar", "Ropa", "Libros", "Juguetes"];
+const defaultImage = "/placeholder.png";
 const theme = createTheme({
   typography: { fontFamily: "'Poppins', 'Helvetica Neue', sans-serif" },
 });
 
 export default function ProductCatalog() {
-  const { user, token } = useContext(AuthContext) || {};
+  const { user } = useContext(AuthContext) || {};
   const navigate = useNavigate();
-  const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
   const isMobile = useMediaQuery("(max-width:600px)");
+
+  // estados
+  const [categories, setCategories] = useState([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [products, setProducts] = useState([]);
   const [cartItems, setCartItems] = useState([]);
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [quantityToAdd, setQuantityToAdd] = useState(1);
-  const [selectedCategory, setSelectedCategory] = useState("Todos");
+  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "info" });
 
-  // cargar productos siempre
+  // 1) cargo categorías (sin pasar headers manualmente)
   useEffect(() => {
-    api
-      .get("/products")
-      .then(res => setProducts(res.data))
+    api.get("/categories")
+      .then(res => {
+        setCategories(res.data);
+      })
       .catch(() => {
-        setSnackbarMessage("Error al cargar productos");
-        setSnackbarOpen(true);
+        setSnackbar({ open: true, message: "No pude cargar categorías", severity: "error" });
       });
   }, []);
 
-  // cargar carrito solo si hay user
+  // 2) cargo productos (Todas o por categoría)
   useEffect(() => {
-    if (!user?.id) {
-      setCartItems([]);
-      return;
-    }
-    api
-      .get(`/cart/${user.id}`, { headers })
+    setLoading(true);
+    const endpoint = selectedCategoryId == null
+      ? "/products"
+      : `/categories/${selectedCategoryId}/products`;
+
+    api.get(endpoint)
+      .then(res => setProducts(res.data))
+      .catch(() => setSnackbar({ open: true, message: "Error al cargar productos", severity: "error" }))
+      .finally(() => setLoading(false));
+  }, [selectedCategoryId]);
+
+  // 3) cargo carrito si hay usuario logueado
+  useEffect(() => {
+    if (!user?.id) return setCartItems([]);
+    api.get(`/cart/${user.id}`)
       .then(res => setCartItems(res.data.items))
-      .catch(() => {
-        setSnackbarMessage("No pude cargar el carrito");
-        setSnackbarOpen(true);
-      });
-  }, [user, token]);
+      .catch(() => setSnackbar({ open: true, message: "No pude cargar el carrito", severity: "error" }));
+  }, [user]);
 
   const handleAgregarAlCarrito = (productId, qty) => {
     if (!user?.id) {
       navigate("/login");
       return;
     }
-    api
-      .post(`/cart/${user.id}/add/${productId}?quantity=${qty}`, null, { headers })
-      .then(() => {
-        setSnackbarMessage("Producto agregado al carrito");
-        setSnackbarOpen(true);
-        // refrescar carrito
-        return api.get(`/cart/${user.id}`, { headers });
+    api.post(`/cart/${user.id}/add/${productId}`, null, { params: { quantity: qty } })
+      .then(() => api.get(`/cart/${user.id}`))
+      .then(res => {
+        setCartItems(res.data.items);
+        setSnackbar({ open: true, message: "Producto agregado al carrito", severity: "success" });
       })
-      .then(res => setCartItems(res.data.items))
-      .catch(() => {
-        setSnackbarMessage("No se pudo agregar al carrito");
-        setSnackbarOpen(true);
-      })
+      .catch(() => setSnackbar({ open: true, message: "Error al agregar al carrito", severity: "error" }))
       .finally(() => setSelectedProduct(null));
   };
 
-  const handleSnackbarClose = () => setSnackbarOpen(false);
+  const handleSnackbarClose = () => setSnackbar(s => ({ ...s, open: false }));
   const toggleDrawer = open => () => setDrawerOpen(open);
-  const handleCategorySelect = cat => {
-    setSelectedCategory(cat);
-    setDrawerOpen(false);
-  };
-
-  const displayedProducts =
-    selectedCategory === "Todos"
-      ? products
-      : products.filter(p => p.categoryName === selectedCategory);
 
   return (
     <ThemeProvider theme={theme}>
-      {/* filtro */}
+      {/* botón filtro */}
       <Box sx={{ display: "flex", alignItems: "center", px: 2, py: 1 }}>
-        <IconButton onClick={toggleDrawer(true)}>
-          <FilterListIcon />
-        </IconButton>
+        <IconButton onClick={toggleDrawer(true)}><FilterListIcon/></IconButton>
       </Box>
+
+      {/* drawer de categorías */}
       <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
         <Box width={250} role="presentation" onKeyDown={toggleDrawer(false)}>
-          <Typography variant="h6" sx={{ p: 2 }}>
-            Categorías
-          </Typography>
+          <Typography variant="h6" sx={{ p: 2 }}>Categorías</Typography>
           <List>
+            <ListItem
+              button
+              selected={selectedCategoryId == null}
+              onClick={() => { setSelectedCategoryId(null); setDrawerOpen(false); }}
+            >
+              <ListItemText primary="Todos" />
+            </ListItem>
             {categories.map(cat => (
               <ListItem
                 button
-                key={cat}
-                selected={cat === selectedCategory}
-                onClick={() => handleCategorySelect(cat)}
+                key={cat.id}
+                selected={selectedCategoryId === cat.id}
+                onClick={() => { setSelectedCategoryId(cat.id); setDrawerOpen(false); }}
               >
-                <ListItemText primary={cat} />
+                <ListItemText primary={cat.name}/>
               </ListItem>
             ))}
           </List>
         </Box>
       </Drawer>
 
-      {/* catálogo */}
+      {/* título y grilla */}
       <Box px={isMobile ? 2 : 4} py={2}>
-        <Typography
-          variant="h5"
-          sx={{ fontWeight: 700, textAlign: "center", mb: 2 }}
-        >
-          {selectedCategory === "Todos"
+        <Typography variant="h5" sx={{ fontWeight: 700, textAlign: "center", mb: 2 }}>
+          {selectedCategoryId == null
             ? "Catálogo de Productos"
-            : `Categoría: ${selectedCategory}`}
+            : `Categoría: ${categories.find(c => c.id === selectedCategoryId)?.name || ""}`}
         </Typography>
-        <Grid container spacing={3}>
-          {displayedProducts.length ? (
-            displayedProducts
-              .sort((a, b) => a.name.localeCompare(b.name))
-              .map(product => {
-                const inCartQty =
-                  cartItems.find(item => item.productId === product.id)
-                    ?.quantity || 0;
-                const available = Math.max(0, product.stock - inCartQty);
-                return (
-                  <Grid item xs={12} sm={6} md={4} key={product.id}>
-                    <Card
-                      sx={{ cursor: "pointer", borderRadius: 1, boxShadow: 2 }}
-                      onClick={() => {
-                        setSelectedProduct(product);
-                        setQuantityToAdd(1);
-                      }}
-                    >
-                      <CardMedia
-                        component="img"
-                        image={product.imageUrl || defaultImage}
-                        onError={e => (e.target.src = defaultImage)}
-                        alt={product.name}
-                        sx={{
-                          height: 230,
-                          objectFit: "cover",
-                          backgroundColor: "#f5f5f5",
-                        }}
-                      />
-                      {available <= 0 && (
-                        <Typography
-                          variant="subtitle2"
-                          color="error"
-                          sx={{ textAlign: "center", mt: 1, fontWeight: "bold" }}
-                        >
-                          Sin stock
-                        </Typography>
-                      )}
-                      <CardContent sx={{ textAlign: "center" }}>
-                        <Typography variant="h6" gutterBottom>
-                          {product.name}
-                        </Typography>
-                        <Typography variant="subtitle1" sx={{ mb: 0.5 }}>
-                          ${product.price.toFixed(2)}
-                        </Typography>
-                        <Typography
-                          variant="subtitle2"
-                          color={available > 0 ? "textSecondary" : "error"}
-                        >
-                          Disponibles: {available}
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                );
-              })
-          ) : (
-            <Box sx={{ width: "100%", textAlign: "center", mt: 4 }}>
-              <Typography>No hay productos en esta categoría.</Typography>
-            </Box>
-          )}
-        </Grid>
+
+        {loading
+          ? <Box sx={{ textAlign: "center", py: 6 }}><CircularProgress/></Box>
+          : <Grid container spacing={3}>
+              {products.length > 0
+                ? products.sort((a, b) => a.name.localeCompare(b.name))
+                    .map(prod => {
+                      const inCart = cartItems.find(i => i.productId === prod.id)?.quantity || 0;
+                      const available = Math.max(0, prod.stock - inCart);
+                      return (
+                        <Grid item xs={12} sm={6} md={4} key={prod.id}>
+                          <Card
+                            sx={{ cursor: "pointer", borderRadius: 1, boxShadow: 2 }}
+                            onClick={() => { setSelectedProduct(prod); setQuantityToAdd(1); }}
+                          >
+                            <CardMedia
+                              component="img"
+                              image={prod.imageUrl || defaultImage}
+                              onError={e => e.target.src = defaultImage}
+                              alt={prod.name}
+                              sx={{ height: 230, objectFit: "cover", backgroundColor: "#f5f5f5" }}
+                            />
+                            {available <= 0 && (
+                              <Typography variant="subtitle2" color="error" sx={{ textAlign:"center", mt:1, fontWeight:"bold" }}>
+                                Sin stock
+                              </Typography>
+                            )}
+                            <CardContent sx={{ textAlign: "center" }}>
+                              <Typography variant="h6">{prod.name}</Typography>
+                              <Typography variant="subtitle1">${prod.price.toFixed(2)}</Typography>
+                              <Typography variant="subtitle2" color={available>0?"textSecondary":"error"}>
+                                Disponibles: {available}
+                              </Typography>
+                            </CardContent>
+                          </Card>
+                        </Grid>
+                      );
+                    })
+                : <Box sx={{ width:"100%", textAlign:"center", mt:4 }}>
+                    <Typography>No hay productos.</Typography>
+                  </Box>
+              }
+            </Grid>
+        }
       </Box>
 
-      {/* diálogo cantidad */}
-      <Dialog
-        open={Boolean(selectedProduct)}
-        onClose={() => setSelectedProduct(null)}
-        fullWidth
-      >
+      {/* diálogo de detalle y cantidad */}
+      <Dialog open={!!selectedProduct} onClose={() => setSelectedProduct(null)} fullWidth>
         {selectedProduct && (() => {
-          const inCartQty =
-            cartItems.find(item => item.productId === selectedProduct.id)
-              ?.quantity || 0;
-          const available = selectedProduct.stock - inCartQty;
+          const inCart = cartItems.find(i => i.productId === selectedProduct.id)?.quantity || 0;
+          const available = selectedProduct.stock - inCart;
           return (
             <>
               <DialogTitle>{selectedProduct.name}</DialogTitle>
@@ -227,33 +198,18 @@ export default function ProductCatalog() {
                 <CardMedia
                   component="img"
                   image={selectedProduct.imageUrl || defaultImage}
-                  onError={e => (e.target.src = defaultImage)}
+                  onError={e => e.target.src = defaultImage}
                   alt={selectedProduct.name}
-                  sx={{
-                    width: "100%",
-                    height: 250,
-                    objectFit: "cover",
-                    mb: 2,
-                  }}
+                  sx={{ width:"100%", height:250, objectFit:"cover", mb:2 }}
                 />
                 {available <= 0 && (
-                  <Typography
-                    variant="subtitle2"
-                    color="error"
-                    sx={{ textAlign: "center", mb: 2, fontWeight: "bold" }}
-                  >
+                  <Typography variant="subtitle2" color="error" sx={{ mb:2, fontWeight:"bold" }}>
                     Sin stock
                   </Typography>
                 )}
                 <Typography>{selectedProduct.description}</Typography>
-                <Typography variant="body1" sx={{ mt: 1 }}>
-                  Precio: ${selectedProduct.price.toFixed(2)}
-                </Typography>
-                <Typography
-                  variant="body1"
-                  sx={{ mb: 2 }}
-                  color={available > 0 ? "textSecondary" : "error"}
-                >
+                <Typography sx={{ mt:1 }}>Precio: ${selectedProduct.price.toFixed(2)}</Typography>
+                <Typography sx={{ mb:2 }} color={available>0?"textSecondary":"error"}>
                   Stock disponible: {available}
                 </Typography>
                 <TextField
@@ -261,26 +217,22 @@ export default function ProductCatalog() {
                   type="number"
                   value={quantityToAdd}
                   onChange={e => {
-                    let val = parseInt(e.target.value, 10) || 1;
-                    if (val < 1) val = 1;
-                    if (val > available) val = available;
-                    setQuantityToAdd(val);
+                    let v = parseInt(e.target.value, 10) || 1;
+                    if (v < 1) v = 1;
+                    if (v > available) v = available;
+                    setQuantityToAdd(v);
                   }}
                   inputProps={{ min: 1, max: available }}
                   fullWidth
-                  sx={{ mb: 2 }}
+                  sx={{ mb:2 }}
                 />
                 <Button
                   variant="contained"
                   fullWidth
                   disabled={available <= 0}
-                  onClick={() =>
-                    handleAgregarAlCarrito(selectedProduct.id, quantityToAdd)
-                  }
+                  onClick={() => handleAgregarAlCarrito(selectedProduct.id, quantityToAdd)}
                 >
-                  {available > 0
-                    ? `Agregar ${quantityToAdd}`
-                    : "Sin Stock"}
+                  {available > 0 ? `Agregar ${quantityToAdd}` : "Sin Stock"}
                 </Button>
               </DialogContent>
             </>
@@ -290,17 +242,13 @@ export default function ProductCatalog() {
 
       {/* snackbar */}
       <Snackbar
-        open={snackbarOpen}
+        open={snackbar.open}
         autoHideDuration={3000}
         onClose={handleSnackbarClose}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
-        <Alert
-          onClose={handleSnackbarClose}
-          severity="success"
-          sx={{ width: "100%" }}
-        >
-          {snackbarMessage}
+        <Alert onClose={handleSnackbarClose} severity={snackbar.severity}>
+          {snackbar.message}
         </Alert>
       </Snackbar>
     </ThemeProvider>
