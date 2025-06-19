@@ -13,6 +13,7 @@ public interface ProductService {
     ProductDTO update(Long id, ProductDTO updatedProduct);  // Cambiado a ProductDTO
     boolean delete(Long id);
     List<ProductDTO> searchByName(String term);
+    List<ProductDTO> findByCategoryId(Long categoryId);
 }
 
 
