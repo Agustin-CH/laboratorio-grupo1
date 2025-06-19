@@ -70,6 +70,14 @@ public class ProductServiceImpl implements ProductService {
                 .stream().map(this::toDTO).toList();
     }
 
+    @Override
+    public List<ProductDTO> findByCategoryId(Long categoryId) {
+        return productRepo.findByCategoryId(categoryId)
+                .stream()
+                .map(this::toDTO)
+                .toList();
+    }
+
     private ProductDTO toDTO(Product p) {
         ProductDTO dto = new ProductDTO();
         dto.setId(p.getId());
