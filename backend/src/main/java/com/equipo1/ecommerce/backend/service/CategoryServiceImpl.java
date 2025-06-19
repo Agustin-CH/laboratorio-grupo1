@@ -1,15 +1,17 @@
 package com.equipo1.ecommerce.backend.service;
 
+import com.equipo1.ecommerce.backend.dto.CategoryDTO;
+import com.equipo1.ecommerce.backend.exception.ResourceNotFoundException;
+import com.equipo1.ecommerce.backend.exception.BadRequestException;
 import com.equipo1.ecommerce.backend.model.Category;
 import com.equipo1.ecommerce.backend.repository.CategoryRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
-    
+
     private final CategoryRepository categoryRepository;
 
     public CategoryServiceImpl(CategoryRepository categoryRepository) {
@@ -22,31 +24,44 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public Optional<Category> getById(Long id) {
-        return categoryRepository.findById(id);
+    public Category getById(Long id) {
+        return categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Categoria con ID " + id + " no encontrada"));
     }
 
     @Override
-    public Category create(Category category) {
-        if (categoryRepository.existsByName(category.getName())) {
-            throw new IllegalArgumentException("La categoría ya existe");
+    public Category create(CategoryDTO dto) {
+        if (dto.getName() == null || dto.getName().trim().isEmpty()) {
+            throw new BadRequestException("El nombre de la categoría es obligatorio");
         }
+
+        if (categoryRepository.existsByName(dto.getName())) {
+            throw new BadRequestException("Ya existe una categoría con ese nombre");
+        }
+
+        Category category = new Category();
+        category.setName(dto.getName());
         return categoryRepository.save(category);
     }
 
     @Override
-    public Optional<Category> update(Long id, Category category) {
-        return categoryRepository.findById(id).map(existing -> {
-            existing.setName(category.getName());
-            return categoryRepository.save(existing);
-        });
+    public Category update(Long id, CategoryDTO dto) { 
+        Category existing = categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada"));
+
+        if (dto.getName() == null || dto.getName().trim().isEmpty()) {
+            throw new BadRequestException("El nombre de la categoría es obligatorio");
+        }
+
+        existing.setName(dto.getName());
+        return categoryRepository.save(existing);
     }
 
     @Override
-    public boolean delete(Long id) {
-        if (!categoryRepository.existsById(id)) return false;
+    public void delete(Long id) { 
+        if (!categoryRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Categoría no encontrada");
+        }
         categoryRepository.deleteById(id);
-        return true;
     }
 }
-

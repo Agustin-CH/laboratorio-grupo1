@@ -6,6 +6,9 @@ import com.equipo1.ecommerce.backend.model.Category;
 import com.equipo1.ecommerce.backend.service.CategoryService;
 import com.equipo1.ecommerce.backend.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import com.equipo1.ecommerce.backend.exception.BadRequestException;
+
+//import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,38 +36,41 @@ public class CategoryController {
     /** 2) Crea una nueva categoría */
     @PostMapping
     public ResponseEntity<CategoryDTO> create(@RequestBody CategoryDTO dto) {
-        var cat = new Category();
-        cat.setName(dto.getName());
-        Category saved = categoryService.create(cat);
-        CategoryDTO out = new CategoryDTO(saved.getId(), saved.getName());
+
+        if (dto.getName() == null || dto.getName().trim().isEmpty()) {
+            throw new BadRequestException("El nombre de la categoría es obligatorio");
+        }
+
+        Category saved = categoryService.create(dto);
+
         return ResponseEntity
                 .created(URI.create("/api/categories/" + saved.getId()))
-                .body(out);
+                .body(new CategoryDTO(saved.getId(), saved.getName()));
     }
 
     /** 3) Actualiza una categoría existente */
     @PutMapping("/{id}")
     public ResponseEntity<CategoryDTO> update(
             @PathVariable Long id,
-            @RequestBody CategoryDTO dto
-    ) {
-        return categoryService.update(id, new Category(null, dto.getName(), null))
-                .map(c -> new CategoryDTO(c.getId(), c.getName()))
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+            @RequestBody CategoryDTO dto) {
+        if (dto.getName() == null || dto.getName().trim().isEmpty()) {
+            throw new BadRequestException("El nombre de la categoría es obligatorio");
+        }
+
+        Category updated = categoryService.update(id, dto);
+        return ResponseEntity.ok(new CategoryDTO(updated.getId(), updated.getName()));
     }
 
     /** 4) Borra una categoría */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        return categoryService.delete(id)
-                ? ResponseEntity.noContent().build()
-                : ResponseEntity.notFound().build();
+        categoryService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}/products")
     public ResponseEntity<List<ProductDTO>> getByCategory(@PathVariable Long id) {
         List<ProductDTO> prods = productService.findByCategoryId(id);
         return ResponseEntity.ok(prods);
-    }
+    }
 }
