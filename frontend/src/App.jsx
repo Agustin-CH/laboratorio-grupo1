@@ -10,7 +10,7 @@ import Profile from "./pages/Profile";
 import Checkout from "./pages/Checkout";
 import PreguntasFrecuentes from "./pages/PreguntasFrecuentes";
 import Login from "./pages/Login";
-
+import Orders from "./pages/Orders";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
@@ -48,6 +48,14 @@ function App() {
             }
           />
 
+          <Route
+            path="/orders"
+            element={
+              <ProtectedRoute>
+                <Orders />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/mi-perfil"
             element={
