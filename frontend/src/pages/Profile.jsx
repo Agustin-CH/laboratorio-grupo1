@@ -24,8 +24,8 @@ const genders = [
 
 const Profile = () => {
   const { logout } = useContext(AuthContext);
-  const [user, setUser]           = useState(null);
-  const [form, setForm]           = useState({
+  const [user, setUser] = useState(null);
+  const [form, setForm] = useState({
     fullName: "",
     email: "",
     nationality: "",
@@ -33,10 +33,10 @@ const Profile = () => {
     birthDate: "",
     gender: ""
   });
-  const [loading, setLoading]     = useState(true);
-  const [saving, setSaving]       = useState(false);
-  const [alert, setAlert]         = useState(null);
-  const [editMode, setEditMode]   = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [alert, setAlert] = useState(null);
+  const [editMode, setEditMode] = useState(false);
 
   useEffect(() => {
     api.get("/users/me")
@@ -64,6 +64,20 @@ const Profile = () => {
 
   const handleSave = async e => {
     e.preventDefault();
+
+    // ✅ Validación de email
+    const emailValido = /^[^@]+@[^@]+\.[^@]+$/.test(form.email);
+    if (!emailValido) {
+      setAlert({ type: "error", msg: "Email inválido" });
+      return;
+    }
+
+    // ✅ Validación de fecha de nacimiento
+    if (form.birthDate && new Date(form.birthDate) > new Date()) {
+      setAlert({ type: "error", msg: "La fecha de nacimiento no puede ser futura" });
+      return;
+    }
+
     setSaving(true);
     try {
       const { data } = await api.put("/users/me", form);
@@ -115,7 +129,6 @@ const Profile = () => {
         </Alert>
       )}
 
-      {/* Mostrar formulario si no hay datos o en edición */}
       {(allEmpty || editMode) ? (
         <Box component="form" onSubmit={handleSave}>
           <Stack spacing={2}>
@@ -175,11 +188,7 @@ const Profile = () => {
             </TextField>
 
             <Box display="flex" justifyContent="flex-end" gap={2} mt={2}>
-              <Button
-                variant="outlined"
-                onClick={handleCancel}
-                disabled={saving}
-              >
+              <Button variant="outlined" onClick={handleCancel} disabled={saving}>
                 Cancelar
               </Button>
               <Button type="submit" variant="contained" disabled={saving}>
@@ -189,7 +198,6 @@ const Profile = () => {
           </Stack>
         </Box>
       ) : (
-        /* Mostrar tarjeta con la información y botón editar */
         <Card>
           <CardContent>
             <Typography><strong>Nombre:</strong> {form.fullName}</Typography>

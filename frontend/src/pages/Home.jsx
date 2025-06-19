@@ -39,11 +39,29 @@ const Home = () => {
             interval={4000}
           >
             {carouselImages.map((img, idx) => (
-              <Box key={idx} sx={{ width: "100%", height: 300, display: "flex", justifyContent: "center", alignItems: "center" }}>
+              <Box
+                key={idx}
+                sx={{
+                  width: "100%",
+                  height: 300,
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
                 <img
                   src={img}
-                  alt={`Destacado ${idx + 1}`}
-                  style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 8 }}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "/fallback.jpg";
+                  }}
+                  alt={`Imagen destacada ${idx + 1}`}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    borderRadius: 8,
+                  }}
                 />
               </Box>
             ))}
@@ -107,7 +125,6 @@ const Home = () => {
       </Box>
 
       <Box sx={{ height: 150 }} />
-
     </Box>
   );
 };

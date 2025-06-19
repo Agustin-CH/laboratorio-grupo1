@@ -39,7 +39,6 @@ export default function ProductCatalog() {
   const navigate = useNavigate();
   const isMobile = useMediaQuery("(max-width:600px)");
 
-  // estados
   const [categories, setCategories] = useState([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [products, setProducts] = useState([]);
@@ -50,23 +49,15 @@ export default function ProductCatalog() {
   const [quantityToAdd, setQuantityToAdd] = useState(1);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "info" });
 
-  // 1) cargo categorías (sin pasar headers manualmente)
   useEffect(() => {
     api.get("/categories")
-      .then(res => {
-        setCategories(res.data);
-      })
-      .catch(() => {
-        setSnackbar({ open: true, message: "No pude cargar categorías", severity: "error" });
-      });
+      .then(res => setCategories(res.data))
+      .catch(() => setSnackbar({ open: true, message: "No pude cargar categorías", severity: "error" }));
   }, []);
 
-  // 2) cargo productos (Todas o por categoría)
   useEffect(() => {
     setLoading(true);
-    const endpoint = selectedCategoryId == null
-      ? "/products"
-      : `/categories/${selectedCategoryId}/products`;
+    const endpoint = selectedCategoryId == null ? "/products" : `/categories/${selectedCategoryId}/products`;
 
     api.get(endpoint)
       .then(res => setProducts(res.data))
@@ -74,7 +65,6 @@ export default function ProductCatalog() {
       .finally(() => setLoading(false));
   }, [selectedCategoryId]);
 
-  // 3) cargo carrito si hay usuario logueado
   useEffect(() => {
     if (!user?.id) return setCartItems([]);
     api.get(`/cart/${user.id}`)
@@ -102,30 +92,19 @@ export default function ProductCatalog() {
 
   return (
     <ThemeProvider theme={theme}>
-      {/* botón filtro */}
       <Box sx={{ display: "flex", alignItems: "center", px: 2, py: 1 }}>
         <IconButton onClick={toggleDrawer(true)}><FilterListIcon/></IconButton>
       </Box>
 
-      {/* drawer de categorías */}
       <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
         <Box width={250} role="presentation" onKeyDown={toggleDrawer(false)}>
           <Typography variant="h6" sx={{ p: 2 }}>Categorías</Typography>
           <List>
-            <ListItem
-              button
-              selected={selectedCategoryId == null}
-              onClick={() => { setSelectedCategoryId(null); setDrawerOpen(false); }}
-            >
+            <ListItem button selected={selectedCategoryId == null} onClick={() => { setSelectedCategoryId(null); setDrawerOpen(false); }}>
               <ListItemText primary="Todos" />
             </ListItem>
             {categories.map(cat => (
-              <ListItem
-                button
-                key={cat.id}
-                selected={selectedCategoryId === cat.id}
-                onClick={() => { setSelectedCategoryId(cat.id); setDrawerOpen(false); }}
-              >
+              <ListItem button key={cat.id} selected={selectedCategoryId === cat.id} onClick={() => { setSelectedCategoryId(cat.id); setDrawerOpen(false); }}>
                 <ListItemText primary={cat.name}/>
               </ListItem>
             ))}
@@ -133,7 +112,6 @@ export default function ProductCatalog() {
         </Box>
       </Drawer>
 
-      {/* título y grilla */}
       <Box px={isMobile ? 2 : 4} py={2}>
         <Typography variant="h5" sx={{ fontWeight: 700, textAlign: "center", mb: 2 }}>
           {selectedCategoryId == null
@@ -145,39 +123,35 @@ export default function ProductCatalog() {
           ? <Box sx={{ textAlign: "center", py: 6 }}><CircularProgress/></Box>
           : <Grid container spacing={3}>
               {products.length > 0
-                ? products.sort((a, b) => a.name.localeCompare(b.name))
-                    .map(prod => {
-                      const inCart = cartItems.find(i => i.productId === prod.id)?.quantity || 0;
-                      const available = Math.max(0, prod.stock - inCart);
-                      return (
-                        <Grid item xs={12} sm={6} md={4} key={prod.id}>
-                          <Card
-                            sx={{ cursor: "pointer", borderRadius: 1, boxShadow: 2 }}
-                            onClick={() => { setSelectedProduct(prod); setQuantityToAdd(1); }}
-                          >
-                            <CardMedia
-                              component="img"
-                              image={prod.imageUrl || defaultImage}
-                              onError={e => e.target.src = defaultImage}
-                              alt={prod.name}
-                              sx={{ height: 230, objectFit: "cover", backgroundColor: "#f5f5f5" }}
-                            />
-                            {available <= 0 && (
-                              <Typography variant="subtitle2" color="error" sx={{ textAlign:"center", mt:1, fontWeight:"bold" }}>
-                                Sin stock
-                              </Typography>
-                            )}
-                            <CardContent sx={{ textAlign: "center" }}>
-                              <Typography variant="h6">{prod.name}</Typography>
-                              <Typography variant="subtitle1">${prod.price.toFixed(2)}</Typography>
-                              <Typography variant="subtitle2" color={available>0?"textSecondary":"error"}>
-                                Disponibles: {available}
-                              </Typography>
-                            </CardContent>
-                          </Card>
-                        </Grid>
-                      );
-                    })
+                ? products.sort((a, b) => a.name.localeCompare(b.name)).map(prod => {
+                    const inCart = cartItems.find(i => i.productId === prod.id)?.quantity || 0;
+                    const available = Math.max(0, prod.stock - inCart);
+                    return (
+                      <Grid item xs={12} sm={6} md={4} key={prod.id}>
+                        <Card sx={{ cursor: "pointer", borderRadius: 1, boxShadow: 2 }} onClick={() => { setSelectedProduct(prod); setQuantityToAdd(1); }}>
+                          <CardMedia
+                            component="img"
+                            image={prod.imageUrl || defaultImage}
+                            onError={e => e.target.src = defaultImage}
+                            alt={prod.name}
+                            sx={{ height: 230, objectFit: "cover", backgroundColor: "#f5f5f5" }}
+                          />
+                          {available <= 0 && (
+                            <Typography variant="subtitle2" color="error" sx={{ textAlign:"center", mt:1, fontWeight:"bold" }}>
+                              Sin stock
+                            </Typography>
+                          )}
+                          <CardContent sx={{ textAlign: "center" }}>
+                            <Typography variant="h6">{prod.name}</Typography>
+                            <Typography variant="subtitle1">${prod.price.toFixed(2)}</Typography>
+                            <Typography variant="subtitle2" color={available>0?"textSecondary":"error"}>
+                              Disponibles: {available}
+                            </Typography>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                    );
+                  })
                 : <Box sx={{ width:"100%", textAlign:"center", mt:4 }}>
                     <Typography>No hay productos.</Typography>
                   </Box>
@@ -186,11 +160,14 @@ export default function ProductCatalog() {
         }
       </Box>
 
-      {/* diálogo de detalle y cantidad */}
       <Dialog open={!!selectedProduct} onClose={() => setSelectedProduct(null)} fullWidth>
         {selectedProduct && (() => {
           const inCart = cartItems.find(i => i.productId === selectedProduct.id)?.quantity || 0;
-          const available = selectedProduct.stock - inCart;
+
+          // ✅ Validación extra: asegurarse que el stock no sea negativo ni inválido
+          const stockSeguro = Math.max(0, selectedProduct.stock || 0);
+          const available = stockSeguro - inCart;
+
           return (
             <>
               <DialogTitle>{selectedProduct.name}</DialogTitle>
@@ -240,7 +217,6 @@ export default function ProductCatalog() {
         })()}
       </Dialog>
 
-      {/* snackbar */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}

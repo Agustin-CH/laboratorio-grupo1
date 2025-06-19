@@ -42,3 +42,6 @@ const PreguntasFrecuentes = () => (
 );
 
 export default PreguntasFrecuentes;
+
+
+// Veo todo correcto, no tocaria nada.

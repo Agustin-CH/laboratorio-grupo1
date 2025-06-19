@@ -7,25 +7,36 @@ import api from "../services/api";
 import { AuthContext } from "../context/AuthContext";
 
 const Login = () => {
-  const navigate         = useNavigate();
-  const { login }        = useContext(AuthContext);
-  const [email, setEmail]           = useState("");
-  const [password, setPassword]     = useState("");
-  const [error, setError]           = useState("");
-  const [loading, setLoading]       = useState(false);
+  const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
 
   // Registro
-  const [regName, setRegName]         = useState("");
-  const [regEmail, setRegEmail]       = useState("");
+  const [regName, setRegName] = useState("");
+  const [regEmail, setRegEmail] = useState("");
   const [regPassword, setRegPassword] = useState("");
-  const [regErrors, setRegErrors]     = useState({});
-  const [regLoading, setRegLoading]   = useState(false);
+  const [regErrors, setRegErrors] = useState({});
+  const [regLoading, setRegLoading] = useState(false);
 
   const handleLogin = async e => {
     e.preventDefault();
-    setLoading(true);
     setError("");
+
+    // ✅ Validaciones básicas antes de enviar al backend
+    if (!email.match(/^[^@]+@[^@]+\.[^@]+$/)) {
+      setError("Email inválido");
+      return;
+    }
+    if (!password.trim()) {
+      setError("La contraseña no puede estar vacía");
+      return;
+    }
+
+    setLoading(true);
     try {
       const { data } = await api.post("/auth/login", { email, password });
       login(data.user, data.token);
@@ -51,7 +62,7 @@ const Login = () => {
     try {
       await api.post("/auth/register", {
         fullName: regName,
-        email:    regEmail,
+        email: regEmail,
         password: regPassword,
       });
       alert("Te registraste correctamente. Inicia sesión.");
@@ -67,13 +78,25 @@ const Login = () => {
     <form onSubmit={handleLogin}>
       <Stack spacing={3}>
         <Box textAlign="center">
-          <PersonIcon sx={{ fontSize: 40, mb:1 }} color="primary" />
+          <PersonIcon sx={{ fontSize: 40, mb: 1 }} color="primary" />
           <Typography variant="h5">Iniciar Sesión</Typography>
         </Box>
-        <TextField label="Email" type="email" fullWidth required
-                   value={email} onChange={e => setEmail(e.target.value)} />
-        <TextField label="Contraseña" type="password" fullWidth required
-                   value={password} onChange={e => setPassword(e.target.value)} />
+        <TextField
+          label="Email"
+          type="email"
+          fullWidth
+          required
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+        />
+        <TextField
+          label="Contraseña"
+          type="password"
+          fullWidth
+          required
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+        />
         {error && <Typography color="error">{error}</Typography>}
         <Divider>o</Divider>
         <Button type="submit" variant="contained" fullWidth disabled={loading}>
@@ -90,15 +113,32 @@ const Login = () => {
     <form onSubmit={handleRegister}>
       <Stack spacing={3}>
         <Typography variant="h5" textAlign="center">Registrarse</Typography>
-        <TextField label="Nombre completo" fullWidth
-                   value={regName} onChange={e => setRegName(e.target.value)}
-                   error={!!regErrors.name} helperText={regErrors.name} />
-        <TextField label="Email" type="email" fullWidth
-                   value={regEmail} onChange={e => setRegEmail(e.target.value)}
-                   error={!!regErrors.email} helperText={regErrors.email} />
-        <TextField label="Contraseña" type="password" fullWidth
-                   value={regPassword} onChange={e => setRegPassword(e.target.value)}
-                   error={!!regErrors.password} helperText={regErrors.password} />
+        <TextField
+          label="Nombre completo"
+          fullWidth
+          value={regName}
+          onChange={e => setRegName(e.target.value)}
+          error={!!regErrors.name}
+          helperText={regErrors.name}
+        />
+        <TextField
+          label="Email"
+          type="email"
+          fullWidth
+          value={regEmail}
+          onChange={e => setRegEmail(e.target.value)}
+          error={!!regErrors.email}
+          helperText={regErrors.email}
+        />
+        <TextField
+          label="Contraseña"
+          type="password"
+          fullWidth
+          value={regPassword}
+          onChange={e => setRegPassword(e.target.value)}
+          error={!!regErrors.password}
+          helperText={regErrors.password}
+        />
         <Button type="submit" variant="contained" fullWidth disabled={regLoading}>
           {regLoading ? "Cargando…" : "Crear Cuenta"}
         </Button>
@@ -109,9 +149,11 @@ const Login = () => {
     </form>
   );
 
-  return <Box sx={{ maxWidth: 400, mx: "auto", py: 5 }}>
-    {showRegister ? renderRegisterForm() : renderLoginForm()}
-  </Box>;
+  return (
+    <Box sx={{ maxWidth: 400, mx: "auto", py: 5 }}>
+      {showRegister ? renderRegisterForm() : renderLoginForm()}
+    </Box>
+  );
 };
 
 export default Login;
