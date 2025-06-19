@@ -1,30 +1,10 @@
 // src/pages/Checkout.jsx
 import React, { useEffect, useState, useContext } from "react";
 import {
-  Box,
-  Typography,
-  TextField,
-  Button,
-  Stepper,
-  Step,
-  StepLabel,
-  Paper,
-  Grid,
-  Divider,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
-  FormHelperText,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Snackbar,
-  Alert,
+  Box, Typography, TextField, Button, Stepper, Step, StepLabel,
+  Paper, Grid, Divider, FormControl, InputLabel, Select, MenuItem,
+  RadioGroup, FormControlLabel, Radio, FormHelperText, Dialog,
+  DialogTitle, DialogContent, DialogActions, Snackbar, Alert
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -48,15 +28,13 @@ export default function Checkout() {
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "info" });
   const [cartItems, setCartItems] = useState([]);
 
-  // 1) Al montar, tiro GET al back para traer el carrito
   useEffect(() => {
     axios.get(`/api/cart/${user.id}`, { headers })
       .then(({ data }) => {
-        // CartDTO.items → [{ productId, productName, unitPrice, quantity }, …]
         setCartItems(data.items.map(i => ({
-          id:       i.productId,
-          name:     i.productName,
-          price:    i.unitPrice,
+          id: i.productId,
+          name: i.productName,
+          price: i.unitPrice,
           quantity: i.quantity
         })));
       })
@@ -66,22 +44,14 @@ export default function Checkout() {
       });
   }, [user.id, headers]);
 
-  // Funciones auxiliares:
-  const calcularSubtotal = items =>
-    items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-
-  const calcularEnvio = subtotal => {
-    // Ejemplo: envío gratis sobre $1000, si no $100
-    return subtotal > 1000 ? 0 : 100;
-  };
-
+  const calcularSubtotal = items => items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const calcularEnvio = subtotal => subtotal > 1000 ? 0 : 100;
   const calcularTotal = (subtotal, envio) => subtotal + envio;
 
-  const subtotal    = calcularSubtotal(cartItems);
+  const subtotal = calcularSubtotal(cartItems);
   const shippingCost = calcularEnvio(subtotal);
-  const total       = calcularTotal(subtotal, shippingCost);
+  const total = calcularTotal(subtotal, shippingCost);
 
-  // Manejo de formularios…
   const handleChange = e => {
     const { name, value, type, checked } = e.target;
     if (activeStep === 0) {
@@ -139,6 +109,7 @@ export default function Checkout() {
     if (activeStep === 0) {
       if (!validateShipping()) return;
       setActiveStep(1);
+
     } else if (activeStep === 1) {
       if (paymentMethod === "credit-card") {
         if (!validatePayment()) return;
@@ -150,13 +121,18 @@ export default function Checkout() {
           setActiveStep(2);
         }, 2000);
       }
+
     } else {
+      // ✅ Validación agregada: evitar confirmar si carrito está vacío
+      if (!cartItems.length) {
+        setSnackbar({ open: true, message: "Tu carrito está vacío", severity: "error" });
+        return;
+      }
+
       try {
-        // Crear orden + limpiar carrito en el back
         await axios.post(`/api/orders/create/${user.id}`, null, { headers });
         await axios.delete(`/api/cart/${user.id}/clear`,       { headers });
 
-        // Local: vaciar estado y confirmar
         setCartItems([]);
         setShowThankYou(true);
       } catch (e) {
@@ -181,7 +157,6 @@ export default function Checkout() {
         ))}
       </Stepper>
 
-      {/* Paso 1: Shipping */}
       {activeStep === 0 && (
         <Paper sx={{ p:3, mb:3, border:"1px solid #eee" }}>
           <Grid container spacing={2}>
@@ -194,9 +169,7 @@ export default function Checkout() {
             ].map(({ label, name, xs }) => (
               <Grid item xs={12} sm={xs} key={name}>
                 <TextField
-                  fullWidth
-                  label={label}
-                  name={name}
+                  fullWidth label={label} name={name}
                   value={shippingData[name]||""}
                   onChange={handleChange}
                   error={!!shippingErrors[name]}
@@ -221,9 +194,7 @@ export default function Checkout() {
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
-                fullWidth
-                label="Teléfono"
-                name="telefono"
+                fullWidth label="Teléfono" name="telefono"
                 value={shippingData.telefono||""}
                 onChange={handleChange}
                 error={!!shippingErrors.telefono}
@@ -239,12 +210,11 @@ export default function Checkout() {
         </Paper>
       )}
 
-      {/* Paso 2: Payment */}
       {activeStep === 1 && (
         <Paper sx={{ p:3, mb:3, border:"1px solid #eee" }}>
           <RadioGroup row value={paymentMethod} onChange={e=>setPaymentMethod(e.target.value)}>
             <FormControlLabel value="credit-card" control={<Radio/>} label="Tarjeta"/>
-            <FormControlLabel value="paypal"      control={<Radio/>} label="PayPal"/>
+            <FormControlLabel value="paypal" control={<Radio/>} label="PayPal"/>
           </RadioGroup>
 
           {paymentMethod === "credit-card" && (
@@ -282,8 +252,7 @@ export default function Checkout() {
           {paymentMethod === "paypal" && (
             <Box textAlign="center" mt={2}>
               <Button
-                variant="contained"
-                color="warning"
+                variant="contained" color="warning"
                 disabled={paypalInProgress}
                 onClick={() => {
                   setPaypalInProgress(true);
@@ -305,7 +274,6 @@ export default function Checkout() {
         </Paper>
       )}
 
-      {/* Paso 3: Review */}
       {activeStep === 2 && (
         <Paper sx={{ p:3, mb:3, border:"1px solid #eee" }}>
           <Typography variant="h6">Envío</Typography>
@@ -356,7 +324,6 @@ export default function Checkout() {
         </Paper>
       )}
 
-      {/* Gracias */}
       <Dialog open={showThankYou} onClose={handleCloseThankYou}>
         <DialogTitle>¡Gracias por tu compra!</DialogTitle>
         <DialogContent>
@@ -367,7 +334,6 @@ export default function Checkout() {
         </DialogActions>
       </Dialog>
 
-      {/* Snackbar */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}
