@@ -1,7 +1,10 @@
 package com.equipo1.ecommerce.backend.controller;
 
+import com.equipo1.ecommerce.backend.exception.ResourceNotFoundException;
 import com.equipo1.ecommerce.backend.model.Category;
 import com.equipo1.ecommerce.backend.service.CategoryService;
+
+import org.apache.catalina.connector.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,7 +16,7 @@ import java.util.List;
 public class CategoryController {
 
     private final CategoryService categoryService;
-    
+
     public CategoryController(CategoryService categoryService) {
         this.categoryService = categoryService;
     }
@@ -25,20 +28,15 @@ public class CategoryController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Category> getById(@PathVariable Long id) {
-        return categoryService.getById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        Category category = categoryService.getById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Categoria con ID " + id + " no encontrada"));
+        return ResponseEntity.ok(category);
     }
 
     @PostMapping
     public ResponseEntity<Category> create(@RequestBody Category category) {
-        try {
-            Category created = categoryService.create(category);
-            return ResponseEntity.created(URI.create("/api/categories/" + created.getId()))
-                    .body(created);
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.badRequest().build();
-        }
+        Category created = categoryService.create(category);
+        return ResponseEntity.created(URI.create(null)).body(created);
     }
 
     @PutMapping("/{id}")
@@ -50,8 +48,6 @@ public class CategoryController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        return categoryService.delete(id) ?
-                ResponseEntity.noContent().build() :
-                ResponseEntity.notFound().build();
+        return categoryService.delete(id) ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 }

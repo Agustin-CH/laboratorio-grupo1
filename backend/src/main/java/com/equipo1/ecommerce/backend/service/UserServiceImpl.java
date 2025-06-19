@@ -7,6 +7,7 @@ import com.equipo1.ecommerce.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import com.equipo1.ecommerce.backend.exception.ResourceNotFoundException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -22,7 +23,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserDTO> getAll() {
         return userRepository.findAll().stream()
-                .map(UserDTO::new)           // invoca el constructor UserDTO(User)
+                .map(UserDTO::new) // invoca el constructor UserDTO(User)
                 .collect(Collectors.toList());
     }
 
@@ -35,6 +36,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteById(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Usuario con ID " + id + " no encontrado");
+        }
         userRepository.deleteById(id);
     }
 

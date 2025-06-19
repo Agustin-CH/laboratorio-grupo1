@@ -8,9 +8,9 @@ import java.util.Optional;
 
 public interface ProductService {
     List<ProductDTO> listAll();
-    Optional<ProductDTO> getById(Long id);
+    Optional<ProductDTO> getById(Long id);  
     ProductDTO create(ProductDTO newProduct);
-    Optional<ProductDTO> update(Long id, ProductDTO updatedProduct);
+    ProductDTO update(Long id, ProductDTO updatedProduct);  // Cambiado a ProductDTO
     boolean delete(Long id);
     List<ProductDTO> searchByName(String term);
 }

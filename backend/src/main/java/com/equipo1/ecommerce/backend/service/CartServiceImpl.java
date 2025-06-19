@@ -2,8 +2,18 @@ package com.equipo1.ecommerce.backend.service;
 
 import com.equipo1.ecommerce.backend.model.*;
 import com.equipo1.ecommerce.backend.repository.*;
+
+import jakarta.annotation.Resource;
+
 import com.equipo1.ecommerce.backend.dto.CartDTO;
 import com.equipo1.ecommerce.backend.dto.CartItemDTO;
+import com.equipo1.ecommerce.backend.exception.ResourceNotFoundException;
+import com.equipo1.ecommerce.backend.exception.BadRequestException;
+import com.equipo1.ecommerce.backend.exception.BusinessRuleException;
+import com.equipo1.ecommerce.backend.exception.ResourceNotFoundException;
+
+
+//import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +39,8 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public Cart getCartByUserId(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow();
+        User user = userRepository.findById(userId)
+        .orElseThrow(() -> new ResourceNotFoundException("Usuario con ID " + userId + " no encontrado"));
         return cartRepository.findByUser(user).orElseGet(() -> {
             Cart newCart = new Cart();
             newCart.setUser(user);
@@ -40,8 +51,19 @@ public class CartServiceImpl implements CartService {
     @Override
     @Transactional
     public Cart addItemToCart(Long userId, Long productId, int quantity) {
+        
+        if (quantity <= 0) {
+            throw new BadRequestException("La cantidad debe ser mayor a cero.");
+        }
+
         Cart cart = getCartByUserId(userId);
-        Product product = productRepository.findById(productId).orElseThrow();
+        
+        Product product = productRepository.findById(productId)
+            .orElseThrow(() -> new ResourceNotFoundException("Producto con ID " + productId + " no encontrado"));
+
+        if (product.getStock() < quantity){
+            throw new BusinessRuleException("Stock insuficiente para el producto: " + product.getName());
+        }
 
         CartItem item = cartItemRepository.findByCartAndProduct(cart, product)
                 .orElse(new CartItem(null, cart, product, 0));
@@ -49,14 +71,20 @@ public class CartServiceImpl implements CartService {
         item.setQuantity(item.getQuantity() + quantity);
         cartItemRepository.save(item);
 
-        return cartRepository.findById(cart.getId()).orElseThrow();
+        return cartRepository.findById(cart.getId()).orElseThrow(() -> new ResourceNotFoundException("Carrito con ID " + cart.getId() + " no encontrado"));
     }
 
     @Override
     @Transactional
     public Cart removeItemFromCart(Long userId, Long productId) {
         Cart cart = getCartByUserId(userId);
-        cart.getItems().removeIf(item -> item.getProduct().getId().equals(productId));
+        
+        
+        boolean removed = cart.getItems().removeIf(item -> item.getProduct().getId().equals(productId));
+        
+        if (!removed){
+            throw new ResourceNotFoundException("Producto con ID " + productId + " no encontrado en el carrito");
+        }
         return cartRepository.save(cart);
     }
 
