@@ -143,7 +143,6 @@ const ProductManagement = () => {
       return;
     }
 
-    // Evitar duplicados por nombre (case insensitive)
     const nameExists = products.some(
       (p) =>
         p.name.trim().toLowerCase() === form.name.trim().toLowerCase() &&

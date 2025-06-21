@@ -65,14 +65,12 @@ const Profile = () => {
   const handleSave = async e => {
     e.preventDefault();
 
-    // ✅ Validación de email
     const emailValido = /^[^@]+@[^@]+\.[^@]+$/.test(form.email);
     if (!emailValido) {
       setAlert({ type: "error", msg: "Email inválido" });
       return;
     }
 
-    // ✅ Validación de fecha de nacimiento
     if (form.birthDate && new Date(form.birthDate) > new Date()) {
       setAlert({ type: "error", msg: "La fecha de nacimiento no puede ser futura" });
       return;

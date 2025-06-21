@@ -1,4 +1,3 @@
-// src/pages/ProductCatalog.jsx
 import React, { useState, useEffect, useContext } from "react";
 import {
   Box,
