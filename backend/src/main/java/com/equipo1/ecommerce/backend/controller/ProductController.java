@@ -3,9 +3,6 @@ package com.equipo1.ecommerce.backend.controller;
 import com.equipo1.ecommerce.backend.dto.ProductDTO;
 import com.equipo1.ecommerce.backend.service.ProductService;
 import com.equipo1.ecommerce.backend.exception.ResourceNotFoundException;
-
-//import jakarta.annotation.Resource;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

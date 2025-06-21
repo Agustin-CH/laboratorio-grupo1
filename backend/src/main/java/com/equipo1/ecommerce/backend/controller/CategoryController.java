@@ -8,7 +8,6 @@ import com.equipo1.ecommerce.backend.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import com.equipo1.ecommerce.backend.exception.BadRequestException;
 
-//import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

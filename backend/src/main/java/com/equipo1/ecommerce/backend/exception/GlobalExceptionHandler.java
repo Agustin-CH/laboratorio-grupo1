@@ -1,5 +1,6 @@
 package com.equipo1.ecommerce.backend.exception;
 
+import com.equipo1.ecommerce.backend.model.ApiError;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
