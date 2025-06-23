@@ -40,7 +40,6 @@ services:
     depends_on:
       - backend
     environment:
-      # Si tu frontend consume la API en /api, apunta al service 'backend' en la red de Docker Compose
       REACT_APP_API_URL: http://backend:8080/api
 
 volumes:
