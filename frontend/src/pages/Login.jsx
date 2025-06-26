@@ -15,7 +15,6 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
 
-  // Registro
   const [regName, setRegName] = useState("");
   const [regEmail, setRegEmail] = useState("");
   const [regPassword, setRegPassword] = useState("");
@@ -26,7 +25,6 @@ const Login = () => {
     e.preventDefault();
     setError("");
 
-    // ✅ Validaciones básicas antes de enviar al backend
     if (!email.match(/^[^@]+@[^@]+\.[^@]+$/)) {
       setError("Email inválido");
       return;

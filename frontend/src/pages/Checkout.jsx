@@ -1,4 +1,3 @@
-// src/pages/Checkout.jsx
 import React, { useEffect, useState, useContext } from "react";
 import {
   Box, Typography, TextField, Button, Stepper, Step, StepLabel,
